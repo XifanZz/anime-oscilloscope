@@ -61,3 +61,9 @@ Source acquisition and history reads are failure-isolated. A failed source attem
 ## Privacy boundary
 
 Tier lists and imported viewing records stay in the browser. If a future Bilibili workflow needs AI review, only unmatched title fragments explicitly approved by the user may be sent to the API. Passwords, cookies, and session credentials are never accepted.
+
+### Tier List local state
+
+Tier libraries use a versioned `localStorage` document. Each library contains ordered arrays for the unranked pool and the five “夯 / 顶 / 人 / 还行 / 拉” tiers. Moving an entry first removes its ID from every location, preventing duplicates, then inserts it at the requested tier and index. Corrupt or incompatible storage safely falls back to a new empty library.
+
+PNG export is rendered directly in the browser with Canvas. It includes only the active library's public catalog fields and never uploads the image or library state.

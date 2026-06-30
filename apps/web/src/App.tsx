@@ -10,6 +10,7 @@ import {
   getRatingHistory,
   searchAnime,
 } from "./api/client";
+import { TierList } from "./tier-list/TierList";
 
 const initialFilters: RankingFilters = {
   year: "2026",
@@ -36,7 +37,7 @@ function OscilloscopeMark() {
 function SignalChart() {
   return (
     <div className="signal-panel" aria-label="评分信号视觉预览">
-      <div className="signal-panel-header"><span>COMPOSITE SIGNAL / PHASE 04</span><span className="channel-pill">CH B+M</span></div>
+      <div className="signal-panel-header"><span>COMPOSITE SIGNAL / PHASE 05</span><span className="channel-pill">CH B+M</span></div>
       <svg className="signal-chart" viewBox="0 0 640 260" role="img" aria-label="示意评分曲线">
         <defs><linearGradient id="signalGlow" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#7ef7c7" /><stop offset="1" stopColor="#73b7ff" /></linearGradient></defs>
         <path className="signal-area" d="M0 210 C80 198 105 124 172 148 S260 188 320 104 S430 78 474 118 S558 70 640 44 V260 H0Z" />
@@ -157,7 +158,7 @@ function App() {
     <div className="app-shell">
       <header className="topbar">
         <a className="brand" href="#top" aria-label="番剧示波器首页"><OscilloscopeMark /><span><strong>番剧示波器</strong><small>ANIME OSCILLOSCOPE</small></span></a>
-        <nav aria-label="主要导航"><a className="active" href="#rankings">综合榜单</a><a href="#oscilloscope">评分走势</a><a href="#search">动画搜索</a><a href="#methodology">评分方法</a></nav>
+        <nav aria-label="主要导航"><a className="active" href="#rankings">综合榜单</a><a href="#oscilloscope">评分走势</a><a href="#search">动画搜索</a><a href="#tier-list">从夯到拉</a><a href="#methodology">评分方法</a></nav>
         <div className="freshness"><i /><span>API 契约已连接</span></div>
       </header>
 
@@ -168,7 +169,7 @@ function App() {
           <SignalChart />
         </section>
 
-        <section className="metrics" aria-label="项目状态"><article><span>当前数据模式</span><strong>{rankings?.data_mode === "demo" ? "DEMO" : "—"}<small>不伪装成实时数据</small></strong></article><article><span>历史采样点</span><strong>{history?.history.composite.length ?? "—"}<small>双源与综合分序列</small></strong></article><article><span>评分透明度</span><strong>100%<small>公开公式与来源缺失</small></strong></article><article><span>当前阶段</span><strong>04<small>历史评分示波器</small></strong></article></section>
+        <section className="metrics" aria-label="项目状态"><article><span>当前数据模式</span><strong>{rankings?.data_mode === "demo" ? "DEMO" : "—"}<small>不伪装成实时数据</small></strong></article><article><span>历史采样点</span><strong>{history?.history.composite.length ?? "—"}<small>双源与综合分序列</small></strong></article><article><span>个人数据</span><strong>LOCAL<small>片库仅保存在浏览器</small></strong></article><article><span>当前阶段</span><strong>05<small>从夯到拉片库</small></strong></article></section>
 
         <section className="ranking-section" id="rankings">
           <div className="section-heading"><div><p className="eyebrow">CURRENT SEASON / API DRIVEN</p><h2>综合信号排行榜</h2><p>综合分不会将缺失来源记为零分；数据完整度会与结果同时展示。</p></div></div>
@@ -200,12 +201,14 @@ function App() {
 
         <section className="search-section" id="search"><div><p className="eyebrow">CATALOG SEARCH</p><h2>搜索动画目录</h2><p>中文名、原名、别名和标签均可匹配。</p></div><form className="search-form" onSubmit={submitSearch}><input aria-label="动画搜索" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="例如：潮汐、太空、悬疑" /><button type="submit">搜索信号</button></form>{searchResults !== null && <div className="search-results">{searchResults.map((anime) => <button type="button" key={anime.id} onClick={() => openDetail(anime.id)}><strong>{anime.name_cn ?? anime.canonical_name}</strong><span>{anime.canonical_name}</span></button>)}{searchResults.length === 0 && <p>没有找到匹配条目。</p>}</div>}</section>
 
+        <TierList catalog={rankings?.items.map((item) => item.anime) ?? []} />
+
         <section className="methodology" id="methodology"><div><p className="eyebrow">OPEN METHODOLOGY</p><h2>不是神秘算法，<br />是一台透明仪器。</h2></div><div className="formula-card"><code>Σ(score × α × log(1 + votes))</code><span /><code>Σ(α × log(1 + votes))</code><p>Bangumi α = 1.5 · MAL α = 1.0</p></div><p className="method-copy">评分人数取对数，避免单个平台仅凭体量完全淹没其他社区。无限制榜允许单源条目，但始终标注完整度；门槛榜要求 Bangumi ＞ 1000、MAL ＞ 20000。</p></section>
       </main>
 
       {detail && <div className="detail-backdrop" role="presentation" onMouseDown={() => setDetail(null)}><aside className="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={(e) => e.stopPropagation()}><button className="close-button" aria-label="关闭详情" type="button" onClick={() => setDetail(null)}>×</button><p className="eyebrow">SIGNAL DETAIL</p><h2 id="detail-title">{detail.anime.name_cn ?? detail.anime.canonical_name}</h2><p className="original-title">{detail.anime.canonical_name}</p><div className="detail-score"><strong>{detail.composite_score?.toFixed(2) ?? "—"}</strong><span>综合分<small>{detail.completeness}% 数据完整度</small></span></div><p>{detail.anime.summary}</p><div className="detail-meta"><span>{detail.anime.air_date}</span><span>{detail.anime.media_type.toUpperCase()}</span><span>{detail.anime.regions.join(" / ")}</span><span>{detail.anime.episode_count ? `${detail.anime.episode_count} 集` : "集数未知"}</span></div><SourceRatings anime={detail.anime} /><p className="demo-note">本详情为交互验证数据，不代表 Bangumi 或 MAL 的真实评价。</p></aside></div>}
 
-      <footer><span>番剧示波器 · Phase 04</span><span>历史序列 · 分集时间轴 · 来源故障保留旧值</span></footer>
+      <footer><span>番剧示波器 · Phase 05</span><span>多片库 · 本地保存 · 拖拽分档 · 长图导出</span></footer>
     </div>
   );
 }

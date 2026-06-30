@@ -65,13 +65,16 @@ beforeEach(() => {
   }));
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  localStorage.clear();
+  vi.unstubAllGlobals();
+});
 
 describe("App", () => {
   it("loads API rankings and clearly labels demo data", async () => {
     render(<App />);
 
-    expect(await screen.findByText("极光频率")).toBeInTheDocument();
+    expect((await screen.findAllByText("极光频率")).length).toBeGreaterThan(1);
     expect(screen.getByRole("status")).toHaveTextContent("演示数据模式");
     expect(screen.getByText("8.72")).toBeInTheDocument();
   });
@@ -86,7 +89,7 @@ describe("App", () => {
 
   it("requests a new ranking when filters change", async () => {
     render(<App />);
-    await screen.findByText("极光频率");
+    await screen.findAllByText("极光频率");
 
     fireEvent.change(screen.getByLabelText("地区"), { target: { value: "JP" } });
 
@@ -98,7 +101,7 @@ describe("App", () => {
 
   it("exposes custom source thresholds in threshold mode", async () => {
     render(<App />);
-    await screen.findByText("极光频率");
+    await screen.findAllByText("极光频率");
 
     fireEvent.change(screen.getByLabelText("门槛"), { target: { value: "threshold" } });
     fireEvent.change(await screen.findByLabelText("Bangumi 最低评分人数"), { target: { value: "2500" } });
@@ -111,7 +114,7 @@ describe("App", () => {
 
   it("searches the catalog and opens a detail panel", async () => {
     render(<App />);
-    await screen.findByText("极光频率");
+    await screen.findAllByText("极光频率");
 
     fireEvent.change(screen.getByLabelText("动画搜索"), { target: { value: "极光" } });
     fireEvent.click(screen.getByRole("button", { name: "搜索信号" }));
@@ -119,5 +122,30 @@ describe("App", () => {
     fireEvent.click(resultButtons.at(-1)!);
 
     expect(await screen.findByRole("dialog")).toHaveTextContent("100% 数据完整度");
+  });
+
+  it("adds ranking entries to a local library and moves them into a tier", async () => {
+    render(<App />);
+    await screen.findByText("从当前榜单批量加入");
+
+    fireEvent.click(screen.getByLabelText("选择 极光频率"));
+    fireEvent.click(screen.getByRole("button", { name: "加入所选（1）" }));
+    const moveSelect = await screen.findByLabelText("移动 极光频率");
+    fireEvent.change(moveSelect, { target: { value: "s" } });
+
+    expect(moveSelect).toHaveValue("s");
+    await waitFor(() => expect(localStorage.getItem("anime-oscilloscope:tier-libraries:v1")).toContain('"s":[{"id":"demo-aurora"'));
+  });
+
+  it("creates and renames an independent local library", async () => {
+    render(<App />);
+    await screen.findByText("从当前榜单批量加入");
+
+    fireEvent.change(screen.getByLabelText("新片库名称"), { target: { value: "2026 春番" } });
+    fireEvent.click(screen.getByRole("button", { name: "新建片库" }));
+    expect(screen.getByRole("tab", { name: /2026 春番/ })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("片库名称"), { target: { value: "春番补完" } });
+
+    expect(screen.getByRole("tab", { name: /春番补完/ })).toBeInTheDocument();
   });
 });

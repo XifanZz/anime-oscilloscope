@@ -9,9 +9,9 @@ Anime Oscilloscope treats an anime title as a signal that changes over time: com
 
 ## Current phase / 当前阶段
 
-Phase 4 adds the historical rating oscilloscope: daily airing snapshots, post-completion cadence transitions, Bangumi/MAL and composite series, episode markers, and per-source freshness. Until Supabase is configured, the UI uses clearly labelled fictional demo records; they are never presented as live source data.
+Phase 5 adds a local-first “从夯到拉” Tier List: multiple libraries, ranking batch-add, catalog search, drag-and-drop grading, in-tier ordering, browser persistence, and PNG export. Until Supabase is configured, the catalog and rating UI uses clearly labelled fictional demo records.
 
-第四阶段已加入历史评分示波器：连载期每日快照、完结后采样降频、Bangumi/MAL/综合分曲线、分集节点与来源新鲜度。Supabase 尚未配置时，界面只使用醒目标注的虚构演示条目，绝不会将其展示为实时来源数据。
+第五阶段已加入本地优先的“从夯到拉”：多片库、排行榜批量加入、目录搜索、拖拽分档、档内排序、浏览器持久化和 PNG 长图导出。Supabase 尚未配置时，目录与评分界面只使用醒目标注的虚构演示条目。
 
 ## Architecture / 架构
 
@@ -76,7 +76,8 @@ The command prints scored candidates and performs no database writes. Never past
 
 ## Data policy / 数据政策
 
-- The Phase 4 interactive catalog and history are explicitly fictional demo data until the database read repository is enabled.
+- The Phase 5 interactive catalog and history are explicitly fictional demo data until the database read repository is enabled.
+- Tier libraries are versioned browser-local data and never sent to the API.
 - Bangumi and MAL are the only enabled connector contracts in the first release.
 - Douban and Filmarks remain disabled until written authorization permits reuse.
 - The site never asks for Bilibili credentials or session cookies.
