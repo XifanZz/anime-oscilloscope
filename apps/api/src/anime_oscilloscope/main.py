@@ -6,7 +6,9 @@ from anime_oscilloscope.catalog import RankingPage, rank_catalog, search_catalog
 from anime_oscilloscope.config import get_settings
 from anime_oscilloscope.connectors import BangumiConnector, MALConnector
 from anime_oscilloscope.demo_catalog import DEMO_CATALOG
+from anime_oscilloscope.demo_history import DEMO_HISTORY
 from anime_oscilloscope.domain import MediaType, SourceCode
+from anime_oscilloscope.history import RatingHistoryResponse
 from anime_oscilloscope.schemas import (
     AnimeDetailResponse,
     HealthResponse,
@@ -139,6 +141,29 @@ def anime_detail(anime_id: str) -> AnimeDetailResponse:
         composite_score=composite_score(anime.ratings),
         completeness=round(100 * len(present & expected) / len(expected)),
         missing_sources=sorted(expected - present, key=str),
+    )
+
+
+@router.get(
+    "/anime/{anime_id}/ratings/history",
+    response_model=RatingHistoryResponse,
+    tags=["ratings"],
+)
+def anime_rating_history(anime_id: str) -> RatingHistoryResponse:
+    if DEMO_CATALOG.get(anime_id) is None:
+        raise HTTPException(status_code=404, detail="Anime not found")
+    history = DEMO_HISTORY.get(anime_id)
+    if history is None:
+        raise HTTPException(status_code=404, detail="Rating history is not available")
+    return RatingHistoryResponse(
+        data_mode=DEMO_HISTORY.data_mode,
+        history=history,
+        sampling_policy={
+            "airing": "daily",
+            "completed_0_to_3_months": "weekly",
+            "completed_3_months_to_3_years": "monthly",
+            "completed_after_3_years": "yearly",
+        },
     )
 
 

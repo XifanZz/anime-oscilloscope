@@ -58,6 +58,30 @@ export type DetailResponse = {
   missing_sources: SourceCode[];
 };
 
+export type HistoryPoint = {
+  sampled_at: string;
+  score: number;
+  rating_count: number;
+};
+
+export type HistoryResponse = {
+  data_mode: "demo" | "live";
+  history: {
+    anime_id: string;
+    series: { source: SourceCode; points: HistoryPoint[] }[];
+    composite: { sampled_at: string; score: number; source_count: number }[];
+    episodes: { episode_number: number; air_date: string; title: string | null }[];
+    freshness: {
+      source: SourceCode;
+      status: "fresh" | "stale" | "unavailable";
+      last_success_at: string | null;
+      last_attempt_at: string | null;
+      message: string | null;
+    }[];
+  };
+  sampling_policy: Record<string, string>;
+};
+
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/v1").replace(/\/$/, "");
 
 async function request<T>(path: string): Promise<T> {
@@ -98,4 +122,8 @@ export function searchAnime(query: string): Promise<SearchResponse> {
 
 export function getAnime(animeId: string): Promise<DetailResponse> {
   return request<DetailResponse>(`/anime/${encodeURIComponent(animeId)}`);
+}
+
+export function getRatingHistory(animeId: string): Promise<HistoryResponse> {
+  return request<HistoryResponse>(`/anime/${encodeURIComponent(animeId)}/ratings/history`);
 }

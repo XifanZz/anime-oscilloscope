@@ -33,6 +33,24 @@ const rankingPayload = {
   items: [{ rank: 1, anime, composite_score: 8.72, completeness: 100, missing_sources: [] }],
 };
 
+const historyPayload = {
+  data_mode: "demo",
+  history: {
+    anime_id: "demo-aurora",
+    series: [
+      { source: "bangumi", points: [{ sampled_at: "2026-04-05T12:00:00Z", score: 8.1, rating_count: 860 }, { sampled_at: "2026-04-12T12:00:00Z", score: 8.3, rating_count: 2150 }] },
+      { source: "mal", points: [{ sampled_at: "2026-04-05T12:00:00Z", score: 8.3, rating_count: 12400 }, { sampled_at: "2026-04-12T12:00:00Z", score: 8.2, rating_count: 23100 }] },
+    ],
+    composite: [{ sampled_at: "2026-04-05T12:00:00Z", score: 8.18, source_count: 2 }, { sampled_at: "2026-04-12T12:00:00Z", score: 8.26, source_count: 2 }],
+    episodes: [{ episode_number: 1, air_date: "2026-04-04T12:00:00Z", title: "第 1 话" }],
+    freshness: [
+      { source: "bangumi", status: "fresh", last_success_at: "2026-04-12T12:00:00Z", last_attempt_at: "2026-04-12T12:00:00Z", message: null },
+      { source: "mal", status: "stale", last_success_at: "2026-04-12T12:00:00Z", last_attempt_at: "2026-04-13T12:00:00Z", message: "继续展示上次成功快照。" },
+    ],
+  },
+  sampling_policy: { airing: "daily" },
+};
+
 function jsonResponse(payload: unknown) {
   return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(payload) });
 }
@@ -41,6 +59,7 @@ beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn((input: string | URL | Request) => {
     const url = String(input);
     if (url.includes("/anime/search")) return jsonResponse({ data_mode: "demo", query: "极光", total: 1, items: [anime] });
+    if (url.includes("/ratings/history")) return jsonResponse(historyPayload);
     if (url.includes("/anime/demo-aurora")) return jsonResponse({ data_mode: "demo", anime, composite_score: 8.72, completeness: 100, missing_sources: [] });
     return jsonResponse(rankingPayload);
   }));
@@ -55,6 +74,14 @@ describe("App", () => {
     expect(await screen.findByText("极光频率")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("演示数据模式");
     expect(screen.getByText("8.72")).toBeInTheDocument();
+  });
+
+  it("renders dual-source history, composite signal, episodes, and stale-source status", async () => {
+    render(<App />);
+
+    expect(await screen.findByRole("img", { name: "Bangumi、MAL 与综合评分历史曲线及分集时间轴" })).toBeInTheDocument();
+    expect(screen.getByText("使用上次成功快照")).toBeInTheDocument();
+    expect(screen.getByText("继续展示上次成功快照。")).toBeInTheDocument();
   });
 
   it("requests a new ranking when filters change", async () => {

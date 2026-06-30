@@ -2,10 +2,12 @@ import { FormEvent, useEffect, useState } from "react";
 import {
   Anime,
   DetailResponse,
+  HistoryResponse,
   RankingFilters,
   RankingResponse,
   getAnime,
   getRankings,
+  getRatingHistory,
   searchAnime,
 } from "./api/client";
 
@@ -34,7 +36,7 @@ function OscilloscopeMark() {
 function SignalChart() {
   return (
     <div className="signal-panel" aria-label="评分信号视觉预览">
-      <div className="signal-panel-header"><span>COMPOSITE SIGNAL / PHASE 03</span><span className="channel-pill">CH B+M</span></div>
+      <div className="signal-panel-header"><span>COMPOSITE SIGNAL / PHASE 04</span><span className="channel-pill">CH B+M</span></div>
       <svg className="signal-chart" viewBox="0 0 640 260" role="img" aria-label="示意评分曲线">
         <defs><linearGradient id="signalGlow" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#7ef7c7" /><stop offset="1" stopColor="#73b7ff" /></linearGradient></defs>
         <path className="signal-area" d="M0 210 C80 198 105 124 172 148 S260 188 320 104 S430 78 474 118 S558 70 640 44 V260 H0Z" />
@@ -57,6 +59,45 @@ function SourceRatings({ anime }: { anime: Anime }) {
   );
 }
 
+type ChartPoint = { sampled_at: string; score: number };
+
+function HistoryChart({ data }: { data: HistoryResponse }) {
+  const width = 960;
+  const height = 360;
+  const left = 58;
+  const right = 28;
+  const top = 28;
+  const bottom = 58;
+  const allPoints: ChartPoint[] = [
+    ...data.history.series.flatMap((series) => series.points),
+    ...data.history.composite,
+  ];
+  const times = [
+    ...allPoints.map((point) => new Date(point.sampled_at).getTime()),
+    ...data.history.episodes.map((episode) => new Date(episode.air_date).getTime()),
+  ];
+  const minTime = Math.min(...times);
+  const maxTime = Math.max(...times);
+  const scores = allPoints.map((point) => point.score);
+  const minScore = Math.floor((Math.min(...scores) - 0.15) * 10) / 10;
+  const maxScore = Math.ceil((Math.max(...scores) + 0.15) * 10) / 10;
+  const x = (time: string) => left + ((new Date(time).getTime() - minTime) / (maxTime - minTime || 1)) * (width - left - right);
+  const y = (score: number) => top + ((maxScore - score) / (maxScore - minScore || 1)) * (height - top - bottom);
+  const path = (points: ChartPoint[]) => points.map((point, index) => `${index ? "L" : "M"}${x(point.sampled_at).toFixed(1)} ${y(point.score).toFixed(1)}`).join(" ");
+  const gridScores = Array.from({ length: 5 }, (_, index) => minScore + ((maxScore - minScore) * index) / 4);
+
+  return (
+    <div className="history-chart-wrap">
+      <svg className="history-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Bangumi、MAL 与综合评分历史曲线及分集时间轴">
+        {gridScores.map((score) => <g key={score}><line className="chart-grid" x1={left} x2={width - right} y1={y(score)} y2={y(score)} /><text className="chart-axis-label" x={10} y={y(score) + 4}>{score.toFixed(1)}</text></g>)}
+        {data.history.episodes.map((episode) => <g className="episode-marker" key={episode.episode_number}><line x1={x(episode.air_date)} x2={x(episode.air_date)} y1={top} y2={height - bottom + 10} /><circle cx={x(episode.air_date)} cy={height - bottom + 16} r="11" /><text x={x(episode.air_date)} y={height - bottom + 20}>{episode.episode_number}</text><title>{episode.title ?? `第 ${episode.episode_number} 话`} · {new Date(episode.air_date).toLocaleDateString("zh-CN")}</title></g>)}
+        {data.history.series.map((series) => <g key={series.source}><path className={`history-line ${series.source}`} d={path(series.points)} />{series.points.map((point) => <circle className={`history-dot ${series.source}`} key={point.sampled_at} cx={x(point.sampled_at)} cy={y(point.score)} r="4"><title>{sourceLabels[series.source]} · {point.score.toFixed(2)} · {new Date(point.sampled_at).toLocaleDateString("zh-CN")}</title></circle>)}</g>)}
+        <path className="history-line composite" d={path(data.history.composite)} />
+      </svg>
+    </div>
+  );
+}
+
 function App() {
   const [filters, setFilters] = useState(initialFilters);
   const [rankings, setRankings] = useState<RankingResponse | null>(null);
@@ -65,6 +106,8 @@ function App() {
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Anime[] | null>(null);
   const [detail, setDetail] = useState<DetailResponse | null>(null);
+  const [history, setHistory] = useState<HistoryResponse | null>(null);
+  const [historyError, setHistoryError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -76,6 +119,14 @@ function App() {
       .finally(() => active && setLoading(false));
     return () => { active = false; };
   }, [filters]);
+
+  useEffect(() => {
+    let active = true;
+    getRatingHistory("demo-aurora")
+      .then((data) => active && setHistory(data))
+      .catch((reason: Error) => active && setHistoryError(reason.message));
+    return () => { active = false; };
+  }, []);
 
   const updateFilter = (key: keyof RankingFilters, value: string) => {
     setFilters((current) => ({ ...current, [key]: value }));
@@ -106,7 +157,7 @@ function App() {
     <div className="app-shell">
       <header className="topbar">
         <a className="brand" href="#top" aria-label="番剧示波器首页"><OscilloscopeMark /><span><strong>番剧示波器</strong><small>ANIME OSCILLOSCOPE</small></span></a>
-        <nav aria-label="主要导航"><a className="active" href="#rankings">综合榜单</a><a href="#search">动画搜索</a><a href="#methodology">评分方法</a><a aria-disabled="true" href="#roadmap">评分走势 · 即将上线</a></nav>
+        <nav aria-label="主要导航"><a className="active" href="#rankings">综合榜单</a><a href="#oscilloscope">评分走势</a><a href="#search">动画搜索</a><a href="#methodology">评分方法</a></nav>
         <div className="freshness"><i /><span>API 契约已连接</span></div>
       </header>
 
@@ -117,7 +168,7 @@ function App() {
           <SignalChart />
         </section>
 
-        <section className="metrics" aria-label="项目状态"><article><span>当前数据模式</span><strong>{rankings?.data_mode === "demo" ? "DEMO" : "—"}<small>不伪装成实时数据</small></strong></article><article><span>目录条目</span><strong>{rankings?.total ?? "—"}<small>筛选后的可比较信号</small></strong></article><article><span>评分透明度</span><strong>100%<small>公开公式与来源缺失</small></strong></article><article><span>当前阶段</span><strong>03<small>排行榜、搜索与详情</small></strong></article></section>
+        <section className="metrics" aria-label="项目状态"><article><span>当前数据模式</span><strong>{rankings?.data_mode === "demo" ? "DEMO" : "—"}<small>不伪装成实时数据</small></strong></article><article><span>历史采样点</span><strong>{history?.history.composite.length ?? "—"}<small>双源与综合分序列</small></strong></article><article><span>评分透明度</span><strong>100%<small>公开公式与来源缺失</small></strong></article><article><span>当前阶段</span><strong>04<small>历史评分示波器</small></strong></article></section>
 
         <section className="ranking-section" id="rankings">
           <div className="section-heading"><div><p className="eyebrow">CURRENT SEASON / API DRIVEN</p><h2>综合信号排行榜</h2><p>综合分不会将缺失来源记为零分；数据完整度会与结果同时展示。</p></div></div>
@@ -140,6 +191,13 @@ function App() {
           )}
         </section>
 
+        <section className="oscilloscope-section" id="oscilloscope">
+          <div className="section-heading"><div><p className="eyebrow">RATING HISTORY / EPISODE TIMELINE</p><h2>历史评分示波器</h2><p>正在观察：极光频率 · 连载期演示序列。圆形节点对应分集播出日期。</p></div><div className="history-legend"><span><i className="bangumi" />Bangumi</span><span><i className="mal" />MAL</span><span><i className="composite" />综合分</span></div></div>
+          {historyError && <div className="error-state" role="alert">{historyError}</div>}
+          {!history && !historyError && <div className="empty-state">正在读取历史信号…</div>}
+          {history && <div className="oscilloscope-card"><HistoryChart data={history} /><div className="history-summary">{history.history.series.map((series) => { const latest = series.points[series.points.length - 1]; const freshness = history.history.freshness.find((item) => item.source === series.source); return <article key={series.source}><span>{sourceLabels[series.source]}</span><strong>{latest?.score.toFixed(2) ?? "—"}</strong><small>{latest?.rating_count.toLocaleString("zh-CN")} 人评分</small><time>{freshness?.last_success_at ? `最后成功更新 ${new Date(freshness.last_success_at).toLocaleString("zh-CN", { hour12: false })}` : "暂无成功采样"}</time><em className={freshness?.status}>{freshness?.status === "fresh" ? "来源正常" : freshness?.status === "stale" ? "使用上次成功快照" : "来源不可用"}</em>{freshness?.message && <p>{freshness.message}</p>}</article>; })}<article className="sampling-card"><span>当前采样节律</span><strong>24h</strong><small>连载期每日采样</small><time>87 个逐日快照</time><em>完结后自动降频并永久保留</em></article></div></div>}
+        </section>
+
         <section className="search-section" id="search"><div><p className="eyebrow">CATALOG SEARCH</p><h2>搜索动画目录</h2><p>中文名、原名、别名和标签均可匹配。</p></div><form className="search-form" onSubmit={submitSearch}><input aria-label="动画搜索" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="例如：潮汐、太空、悬疑" /><button type="submit">搜索信号</button></form>{searchResults !== null && <div className="search-results">{searchResults.map((anime) => <button type="button" key={anime.id} onClick={() => openDetail(anime.id)}><strong>{anime.name_cn ?? anime.canonical_name}</strong><span>{anime.canonical_name}</span></button>)}{searchResults.length === 0 && <p>没有找到匹配条目。</p>}</div>}</section>
 
         <section className="methodology" id="methodology"><div><p className="eyebrow">OPEN METHODOLOGY</p><h2>不是神秘算法，<br />是一台透明仪器。</h2></div><div className="formula-card"><code>Σ(score × α × log(1 + votes))</code><span /><code>Σ(α × log(1 + votes))</code><p>Bangumi α = 1.5 · MAL α = 1.0</p></div><p className="method-copy">评分人数取对数，避免单个平台仅凭体量完全淹没其他社区。无限制榜允许单源条目，但始终标注完整度；门槛榜要求 Bangumi ＞ 1000、MAL ＞ 20000。</p></section>
@@ -147,7 +205,7 @@ function App() {
 
       {detail && <div className="detail-backdrop" role="presentation" onMouseDown={() => setDetail(null)}><aside className="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={(e) => e.stopPropagation()}><button className="close-button" aria-label="关闭详情" type="button" onClick={() => setDetail(null)}>×</button><p className="eyebrow">SIGNAL DETAIL</p><h2 id="detail-title">{detail.anime.name_cn ?? detail.anime.canonical_name}</h2><p className="original-title">{detail.anime.canonical_name}</p><div className="detail-score"><strong>{detail.composite_score?.toFixed(2) ?? "—"}</strong><span>综合分<small>{detail.completeness}% 数据完整度</small></span></div><p>{detail.anime.summary}</p><div className="detail-meta"><span>{detail.anime.air_date}</span><span>{detail.anime.media_type.toUpperCase()}</span><span>{detail.anime.regions.join(" / ")}</span><span>{detail.anime.episode_count ? `${detail.anime.episode_count} 集` : "集数未知"}</span></div><SourceRatings anime={detail.anime} /><p className="demo-note">本详情为交互验证数据，不代表 Bangumi 或 MAL 的真实评价。</p></aside></div>}
 
-      <footer><span>番剧示波器 · Phase 03</span><span>演示目录 · API 驱动 · 数据状态透明标注</span></footer>
+      <footer><span>番剧示波器 · Phase 04</span><span>历史序列 · 分集时间轴 · 来源故障保留旧值</span></footer>
     </div>
   );
 }

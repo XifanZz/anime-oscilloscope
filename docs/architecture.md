@@ -52,6 +52,12 @@ Ranking, search, and detail endpoints depend on a catalog repository rather than
 
 The composite score is calculated only from available observations. Missing sources are not converted into zero-valued ratings. The default threshold mode requires both Bangumi > 1,000 and MAL > 20,000 votes; unrestricted mode permits single-source entries and labels their completeness.
 
+## Historical sampling
+
+Only titles premiering on or after the tracking launch date enter the historical pipeline. Airing titles are sampled daily. Completed titles move from weekly sampling during the first 90 days, to every 30 days through year three, then every 365 days. Snapshots are retained permanently.
+
+Source acquisition and history reads are failure-isolated. A failed source attempt records its state but does not delete or zero the latest successful snapshot. History responses expose `fresh`, `stale`, or `unavailable` per source, together with the last success and last attempt timestamps. Composite history is calculated independently at each timestamp from the observations actually present.
+
 ## Privacy boundary
 
 Tier lists and imported viewing records stay in the browser. If a future Bilibili workflow needs AI review, only unmatched title fragments explicitly approved by the user may be sent to the API. Passwords, cookies, and session credentials are never accepted.
