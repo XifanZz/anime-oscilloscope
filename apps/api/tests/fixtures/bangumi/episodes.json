@@ -1,0 +1,32 @@
+{
+  "total": 2,
+  "limit": 100,
+  "offset": 0,
+  "data": [
+    {
+      "id": 910001,
+      "type": 0,
+      "name": "Sampling Start",
+      "name_cn": "开始采样",
+      "sort": 1,
+      "ep": 1,
+      "airdate": "2026-07-03",
+      "comment": 0,
+      "duration": "24m",
+      "desc": "",
+      "disc": 0
+    },
+    {
+      "id": 910002,
+      "type": 1,
+      "name": "Calibration",
+      "name_cn": "校准",
+      "sort": 1,
+      "airdate": "2026-07-10",
+      "comment": 0,
+      "duration": "5m",
+      "desc": "",
+      "disc": 0
+    }
+  ]
+}

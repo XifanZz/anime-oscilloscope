@@ -1,0 +1,40 @@
+{
+  "id": 900001,
+  "type": 2,
+  "name": "Signal no Anime",
+  "name_cn": "信号动画",
+  "summary": "用于连接器测试的虚构动画条目。",
+  "nsfw": false,
+  "date": "2026-07-03",
+  "platform": "TV",
+  "images": {
+    "large": "https://example.invalid/signal-large.jpg",
+    "common": "https://example.invalid/signal-common.jpg"
+  },
+  "infobox": [
+    {
+      "key": "别名",
+      "value": [
+        {"k": "英文名", "v": "Signal Anime"},
+        {"v": "信号番"}
+      ]
+    },
+    {
+      "key": "国家/地区",
+      "value": [
+        {"v": "日本"},
+        {"v": "美国"}
+      ]
+    }
+  ],
+  "rating": {
+    "rank": 42,
+    "total": 1234,
+    "count": {"1": 2, "7": 200, "8": 700, "9": 300, "10": 32},
+    "score": 8.4
+  },
+  "tags": [
+    {"name": "原创", "count": 500},
+    {"name": "科幻", "count": 380}
+  ]
+}

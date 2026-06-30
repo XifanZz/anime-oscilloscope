@@ -9,9 +9,9 @@ Anime Oscilloscope treats an anime title as a signal that changes over time: com
 
 ## Current phase / 当前阶段
 
-Phase 1 establishes the monorepo, visual system, API boundary, database schema, CI, and deployment templates. Live Bangumi and MAL synchronization begins in Phase 2.
+Phase 2A adds the normalized source contract, a read-only Bangumi connector, eligibility policies, response fixtures, and a seasonal discovery command. PostgreSQL writes and MAL synchronization remain disabled until the following checkpoint.
 
-第一阶段建立项目骨架、视觉系统、API 边界、数据库结构、CI 和部署模板。Bangumi 与 MAL 的实时同步将在第二阶段实现。
+第二阶段 A 已加入统一数据源契约、只读 Bangumi 连接器、收录规则、固定响应测试和季度发现命令。数据库写入与 MAL 同步将在后续检查点启用。
 
 ## Architecture / 架构
 
@@ -52,6 +52,14 @@ npm.cmd run typecheck
 npm.cmd run build
 .venv\Scripts\python -m pytest apps/api/tests
 ```
+
+### Read-only Bangumi discovery / 只读季度发现
+
+```powershell
+.venv\Scripts\python -m anime_oscilloscope.jobs.discover_bangumi --year 2026 --quarter 3 --limit 5
+```
+
+The command calls the public API and prints normalized eligibility decisions. It performs no database writes.
 
 ## Data policy / 数据政策
 

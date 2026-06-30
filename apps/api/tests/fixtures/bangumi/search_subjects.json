@@ -1,0 +1,45 @@
+{
+  "total": 3,
+  "limit": 20,
+  "offset": 0,
+  "data": [
+    {
+      "id": 900001,
+      "name": "Signal no Anime",
+      "name_cn": "信号动画",
+      "summary": "用于连接器测试的虚构动画条目。",
+      "nsfw": false,
+      "date": "2026-07-03",
+      "platform": "TV",
+      "meta_tags": ["TV", "日本", "原创"],
+      "infobox": [{"key": "国家/地区", "value": [{"v": "日本"}, {"v": "美国"}]}],
+      "rating": {"rank": 42, "total": 1234, "count": {"8": 900}, "score": 8.4},
+      "tags": []
+    },
+    {
+      "id": 900002,
+      "name": "Cloud Co-production",
+      "name_cn": "云端合拍计划",
+      "summary": "中美合拍测试条目。",
+      "nsfw": false,
+      "date": "2026-08-12",
+      "platform": "WEB",
+      "meta_tags": ["WEB", "中国"],
+      "infobox": [{"key": "制片国家/地区", "value": "中国大陆 / 美国"}],
+      "rating": {"rank": 0, "total": 98, "count": {}, "score": 7.1},
+      "tags": []
+    },
+    {
+      "id": 900003,
+      "name": "My Hero Academia Fixture",
+      "name_cn": "我的英雄学院 测试条目",
+      "summary": "仅用于验证全系列排除规则。",
+      "nsfw": false,
+      "date": "2026-09-01",
+      "platform": "剧场版",
+      "infobox": [{"key": "国家/地区", "value": "日本"}],
+      "rating": {"rank": 0, "total": 5000, "count": {}, "score": 7.5},
+      "tags": []
+    }
+  ]
+}

@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-SourceCode = Literal["bangumi", "mal", "douban", "filmarks"]
+from anime_oscilloscope.domain import SourceCode
 
 
 class HealthResponse(BaseModel):
