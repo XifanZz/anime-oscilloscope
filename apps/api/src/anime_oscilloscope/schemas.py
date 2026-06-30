@@ -33,7 +33,7 @@ class ServiceMetaResponse(BaseModel):
     product_name: str = "番剧示波器"
     product_name_en: str = "Anime Oscilloscope"
     subtitle: str = "多源动画评分采样与分析平台"
-    phase: int = 5
+    phase: int = 6
     sources: list[SourceStatus]
     scoring: ScoringRule
 
@@ -41,6 +41,12 @@ class ServiceMetaResponse(BaseModel):
 class SearchResponse(BaseModel):
     data_mode: Literal["demo", "live"]
     query: str
+    total: int
+    items: list[CatalogAnime]
+
+
+class CatalogIndexResponse(BaseModel):
+    data_mode: Literal["demo", "live"]
     total: int
     items: list[CatalogAnime]
 

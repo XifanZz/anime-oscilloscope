@@ -67,3 +67,13 @@ Tier lists and imported viewing records stay in the browser. If a future Bilibil
 Tier libraries use a versioned `localStorage` document. Each library contains ordered arrays for the unranked pool and the five “夯 / 顶 / 人 / 还行 / 拉” tiers. Moving an entry first removes its ID from every location, preventing duplicates, then inserts it at the requested tier and index. Corrupt or incompatible storage safely falls back to a new empty library.
 
 PNG export is rendered directly in the browser with Canvas. It includes only the active library's public catalog fields and never uploads the image or library state.
+
+## Semantic retrieval
+
+Natural-language retrieval combines deterministic constraint parsing with a swappable 512-dimensional embedding provider. The production provider uses FastEmbed's quantized ONNX runtime with `BAAI/bge-small-zh-v1.5`; demo and CI use a deterministic character-ngram vector so tests do not download a model. Every response exposes the actual engine and model name.
+
+Rules extract year, production regions, media type, airing status, and known catalog tags. Structured constraints filter candidates; vector similarity ranks the survivors. Results include rule evidence, similarity evidence, confidence, and elapsed time.
+
+## Private file import
+
+The web client downloads the public catalog index without transmitting private titles. User-selected CSV/JSON files are parsed, deduplicated, and matched to that index in browser memory. Exact, containment, and edit-distance evidence produces up to three candidates. No candidate is added until the user confirms it. Files containing password, Cookie, `SESSDATA`, or token fields are rejected.

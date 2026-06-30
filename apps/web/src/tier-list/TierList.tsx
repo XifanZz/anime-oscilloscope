@@ -1,6 +1,7 @@
 import { DragEvent, FormEvent, useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { Anime } from "../api/client";
 import { searchAnime } from "../api/client";
+import { BilibiliImport } from "../bilibili-import/BilibiliImport";
 import { exportTierList } from "./export";
 import {
   createInitialTierState,
@@ -45,7 +46,7 @@ function TierAnimeCard({ anime, location, onMove, onReorder, onRemove, onDragSta
   );
 }
 
-export function TierList({ catalog }: { catalog: Anime[] }) {
+export function TierList({ catalog, catalogIndex }: { catalog: Anime[]; catalogIndex: Anime[] }) {
   const [state, setState] = useState(loadTierState);
   const [newLibraryName, setNewLibraryName] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -86,6 +87,12 @@ export function TierList({ catalog }: { catalog: Anime[] }) {
     setState((current) => selected.reduce((next, anime) => moveAnime(next, next.activeLibraryId, toTierAnime(anime), "pool"), current));
     setSelectedIds(new Set());
     setMessage(`已批量加入 ${selected.length} 部动画`);
+  };
+
+  const addImported = (animeList: Anime[]) => {
+    const newAnime = animeList.filter((anime) => !existingIds.has(anime.id));
+    setState((current) => newAnime.reduce((next, anime) => moveAnime(next, next.activeLibraryId, toTierAnime(anime), "pool"), current));
+    setMessage(`已将 ${newAnime.length} 个新候选加入当前片库`);
   };
 
   const submitSearch = async (event: FormEvent) => {
@@ -136,6 +143,7 @@ export function TierList({ catalog }: { catalog: Anime[] }) {
         <div><p className="eyebrow">ADD FROM RANKING</p><h3>从当前榜单批量加入</h3><div className="candidate-grid">{catalog.map((anime) => <label className={existingIds.has(anime.id) ? "added" : ""} key={anime.id}><input type="checkbox" aria-label={`选择 ${anime.name_cn ?? anime.canonical_name}`} disabled={existingIds.has(anime.id)} checked={selectedIds.has(anime.id)} onChange={(event) => setSelectedIds((current) => { const next = new Set(current); event.target.checked ? next.add(anime.id) : next.delete(anime.id); return next; })} /><span><strong>{anime.name_cn ?? anime.canonical_name}</strong><small>{existingIds.has(anime.id) ? "已在片库" : anime.media_type.toUpperCase()}</small></span></label>)}</div><button className="add-selected" type="button" disabled={!selectedIds.size} onClick={addSelected}>加入所选（{selectedIds.size}）</button></div>
         <div><p className="eyebrow">CATALOG SEARCH</p><h3>搜索后加入</h3><form className="tier-search" onSubmit={submitSearch}><input aria-label="片库动画搜索" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="输入中文名、别名或标签" /><button type="submit">搜索</button></form><div className="tier-search-results">{results.map((anime) => <button type="button" disabled={existingIds.has(anime.id)} key={anime.id} onClick={() => addAnime(anime)}><span><strong>{anime.name_cn ?? anime.canonical_name}</strong><small>{anime.canonical_name}</small></span><b>{existingIds.has(anime.id) ? "已加入" : "+ 加入"}</b></button>)}</div></div>
       </div>
+      <BilibiliImport catalog={catalogIndex} onConfirm={addImported} />
       {message && <p className="tier-message" role="status">{message}</p>}
 
       <div className="tier-board" data-testid="tier-board">

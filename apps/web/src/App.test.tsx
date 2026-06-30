@@ -51,6 +51,16 @@ const historyPayload = {
   sampling_policy: { airing: "daily" },
 };
 
+const semanticPayload = {
+  data_mode: "demo",
+  query: "中日合拍的悬疑WEB动画",
+  engine: "hash-512-demo",
+  model_name: "deterministic-character-ngram",
+  parsed_intent: { year: null, regions: ["CN", "JP"], media_types: ["web"], statuses: [], tags: ["悬疑"] },
+  results: [{ anime, confidence: 0.91, reasons: ["制作地区匹配：CN / JP", "标签匹配：悬疑"] }],
+  elapsed_ms: 1.2,
+};
+
 function jsonResponse(payload: unknown) {
   return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(payload) });
 }
@@ -59,6 +69,8 @@ beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn((input: string | URL | Request) => {
     const url = String(input);
     if (url.includes("/anime/search")) return jsonResponse({ data_mode: "demo", query: "极光", total: 1, items: [anime] });
+    if (url.includes("/anime/semantic-search")) return jsonResponse(semanticPayload);
+    if (url.includes("/anime/index")) return jsonResponse({ data_mode: "demo", total: 1, items: [anime] });
     if (url.includes("/ratings/history")) return jsonResponse(historyPayload);
     if (url.includes("/anime/demo-aurora")) return jsonResponse({ data_mode: "demo", anime, composite_score: 8.72, completeness: 100, missing_sources: [] });
     return jsonResponse(rankingPayload);
@@ -85,6 +97,19 @@ describe("App", () => {
     expect(await screen.findByRole("img", { name: "Bangumi、MAL 与综合评分历史曲线及分集时间轴" })).toBeInTheDocument();
     expect(screen.getByText("使用上次成功快照")).toBeInTheDocument();
     expect(screen.getByText("继续展示上次成功快照。")).toBeInTheDocument();
+  });
+
+  it("explains natural-language retrieval results and discloses the active engine", async () => {
+    render(<App />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "分析这句话" }));
+
+    expect(await screen.findByText("hash-512-demo")).toBeInTheDocument();
+    expect(screen.getByText("制作地区匹配：CN / JP")).toBeInTheDocument();
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/anime/semantic-search"),
+      expect.objectContaining({ method: "POST" }),
+    );
   });
 
   it("requests a new ranking when filters change", async () => {
@@ -147,5 +172,20 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("片库名称"), { target: { value: "春番补完" } });
 
     expect(screen.getByRole("tab", { name: /春番补完/ })).toBeInTheDocument();
+  });
+
+  it("imports a local JSON file only after explicit candidate confirmation", async () => {
+    render(<App />);
+    await screen.findByText("B站片单文件导入");
+    const file = new File([JSON.stringify([{ title: "极光频率", progress: "第 6 话" }])], "history.json", { type: "application/json" });
+    Object.defineProperty(file, "text", { value: () => Promise.resolve(JSON.stringify([{ title: "极光频率", progress: "第 6 话" }])) });
+
+    fireEvent.change(screen.getByLabelText("选择B站片单文件"), { target: { files: [file] } });
+    const confirm = await screen.findByLabelText("确认导入 极光频率");
+    expect(screen.getByRole("button", { name: "将已确认的 0 部加入当前片库" })).toBeDisabled();
+    fireEvent.click(confirm);
+    fireEvent.click(screen.getByRole("button", { name: "将已确认的 1 部加入当前片库" }));
+
+    expect(await screen.findByLabelText("移动 极光频率")).toBeInTheDocument();
   });
 });

@@ -9,9 +9,9 @@ Anime Oscilloscope treats an anime title as a signal that changes over time: com
 
 ## Current phase / 当前阶段
 
-Phase 5 adds a local-first “从夯到拉” Tier List: multiple libraries, ranking batch-add, catalog search, drag-and-drop grading, in-tier ordering, browser persistence, and PNG export. Until Supabase is configured, the catalog and rating UI uses clearly labelled fictional demo records.
+Phase 6 adds explainable Chinese natural-language retrieval and privacy-preserving Bilibili file import. Production can enable quantized ONNX `BAAI/bge-small-zh-v1.5`; deterministic demo/CI retrieval always discloses that it is a fallback engine. CSV/JSON viewing records are parsed and matched locally, and every candidate requires confirmation.
 
-第五阶段已加入本地优先的“从夯到拉”：多片库、排行榜批量加入、目录搜索、拖拽分档、档内排序、浏览器持久化和 PNG 长图导出。Supabase 尚未配置时，目录与评分界面只使用醒目标注的虚构演示条目。
+第六阶段已加入可解释的中文自然语言找番和保护隐私的 B站文件导入。生产环境可启用量化 ONNX `BAAI/bge-small-zh-v1.5`；演示与 CI 使用确定性回退引擎并明确标注。CSV/JSON 观看记录只在本地解析和匹配，每个候选都必须确认。
 
 ## Architecture / 架构
 
@@ -46,6 +46,13 @@ Open `http://localhost:8000/docs` or `http://localhost:8000/api/v1/health`.
 
 Start both services to exercise the interactive ranking. The web app defaults to `http://127.0.0.1:8000/api/v1`; deployment can override it with `VITE_API_BASE_URL`.
 
+To enable the optional quantized BGE backend:
+
+```powershell
+.venv\Scripts\python -m pip install -e "apps/api[ai]"
+$env:APP_SEMANTIC_BACKEND="bge"
+```
+
 ## Verification / 验证
 
 ```powershell
@@ -76,8 +83,9 @@ The command prints scored candidates and performs no database writes. Never past
 
 ## Data policy / 数据政策
 
-- The Phase 5 interactive catalog and history are explicitly fictional demo data until the database read repository is enabled.
+- The Phase 6 interactive catalog and history are explicitly fictional demo data until the database read repository is enabled.
 - Tier libraries are versioned browser-local data and never sent to the API.
+- Imported viewing files and raw titles stay in the browser; password, Cookie, `SESSDATA`, and token fields are rejected.
 - Bangumi and MAL are the only enabled connector contracts in the first release.
 - Douban and Filmarks remain disabled until written authorization permits reuse.
 - The site never asks for Bilibili credentials or session cookies.

@@ -11,6 +11,7 @@ from anime_oscilloscope.domain import MediaType, SourceCode
 from anime_oscilloscope.history import RatingHistoryResponse
 from anime_oscilloscope.schemas import (
     AnimeDetailResponse,
+    CatalogIndexResponse,
     HealthResponse,
     ScoringRule,
     SearchResponse,
@@ -18,8 +19,18 @@ from anime_oscilloscope.schemas import (
     SourceStatus,
 )
 from anime_oscilloscope.scoring import composite_score
+from anime_oscilloscope.semantic import (
+    SemanticSearchRequest,
+    SemanticSearchResponse,
+    SemanticSearchService,
+    create_embedding_provider,
+)
 
 settings = get_settings()
+semantic_service = SemanticSearchService(
+    DEMO_CATALOG,
+    create_embedding_provider(settings.semantic_backend, settings.semantic_model_name),
+)
 
 app = FastAPI(
     title="Anime Oscilloscope API",
@@ -126,6 +137,25 @@ def anime_search(
 ) -> SearchResponse:
     items = search_catalog(DEMO_CATALOG, q, limit)
     return SearchResponse(data_mode=DEMO_CATALOG.data_mode, query=q, total=len(items), items=items)
+
+
+@router.get("/anime/index", response_model=CatalogIndexResponse, tags=["catalog"])
+def anime_catalog_index() -> CatalogIndexResponse:
+    items = DEMO_CATALOG.list_all()
+    return CatalogIndexResponse(
+        data_mode=DEMO_CATALOG.data_mode,
+        total=len(items),
+        items=items,
+    )
+
+
+@router.post(
+    "/anime/semantic-search",
+    response_model=SemanticSearchResponse,
+    tags=["ai"],
+)
+def anime_semantic_search(request: SemanticSearchRequest) -> SemanticSearchResponse:
+    return semantic_service.search(request)
 
 
 @router.get("/anime/{anime_id}", response_model=AnimeDetailResponse, tags=["catalog"])

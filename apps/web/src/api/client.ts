@@ -84,8 +84,11 @@ export type HistoryResponse = {
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/v1").replace(/\/$/, "");
 
-async function request<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, { headers: { Accept: "application/json" } });
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...init,
+    headers: { Accept: "application/json", ...init?.headers },
+  });
   if (!response.ok) {
     throw new Error(`API 请求失败（${response.status}）`);
   }
@@ -122,6 +125,34 @@ export function searchAnime(query: string): Promise<SearchResponse> {
 
 export function getAnime(animeId: string): Promise<DetailResponse> {
   return request<DetailResponse>(`/anime/${encodeURIComponent(animeId)}`);
+}
+
+export type SemanticResponse = {
+  data_mode: "demo" | "live";
+  query: string;
+  engine: string;
+  model_name: string;
+  parsed_intent: {
+    year: number | null;
+    regions: string[];
+    media_types: Anime["media_type"][];
+    statuses: Anime["status"][];
+    tags: string[];
+  };
+  results: { anime: Anime; confidence: number; reasons: string[] }[];
+  elapsed_ms: number;
+};
+
+export function semanticSearch(query: string): Promise<SemanticResponse> {
+  return request<SemanticResponse>("/anime/semantic-search", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, limit: 10 }),
+  });
+}
+
+export function getCatalogIndex(): Promise<{ data_mode: "demo" | "live"; total: number; items: Anime[] }> {
+  return request("/anime/index");
 }
 
 export function getRatingHistory(animeId: string): Promise<HistoryResponse> {

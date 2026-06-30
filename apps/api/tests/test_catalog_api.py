@@ -52,6 +52,21 @@ def test_search_matches_chinese_title_aliases_and_tags() -> None:
     assert tag.json()["items"][0]["id"] == "demo-lantern"
 
 
+def test_catalog_index_can_be_downloaded_without_uploading_private_titles() -> None:
+    response = client.get("/api/v1/anime/index")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["data_mode"] == "demo"
+    assert payload["total"] == 4
+    assert {item["id"] for item in payload["items"]} == {
+        "demo-aurora",
+        "demo-tidal",
+        "demo-lantern",
+        "demo-paper-moon",
+    }
+
+
 def test_detail_explains_source_completeness_and_returns_404() -> None:
     detail = client.get("/api/v1/anime/demo-lantern")
     missing = client.get("/api/v1/anime/unknown")

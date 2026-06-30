@@ -20,6 +20,9 @@ dev = [
   "pytest-cov>=6.2,<7.0",
   "ruff>=0.12,<1.0",
 ]
+ai = [
+  "fastembed>=0.7,<1.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -17,6 +18,8 @@ class Settings(BaseSettings):
     bangumi_token: str | None = None
     mal_client_id: str | None = None
     project_url: str = "https://github.com/XifanZz/anime-oscilloscope"
+    semantic_backend: Literal["hash", "bge"] = "hash"
+    semantic_model_name: str = "BAAI/bge-small-zh-v1.5"
 
     @field_validator("cors_origins", mode="before")
     @classmethod
