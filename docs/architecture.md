@@ -13,6 +13,8 @@ flowchart LR
   J --> V[(pgvector)]
   G[GitHub Actions scheduler] --> J
   W[React web app] --> A[FastAPI]
+  A --> C[Catalog repository contract]
+  C --> D[Explicit demo repository in development]
   A --> Q
   A --> V
   W --> L[(Browser local storage)]
@@ -43,6 +45,12 @@ Connectors declare capabilities. Bangumi supports episode timelines; MAL does no
 The matcher scores title aliases, air-date proximity, media type, and episode count. Installment signatures such as season number, Part, movie, and OVA act as review gates. Automatic mapping is allowed only when confidence is high and no risk reason is present; all other plausible candidates remain versioned review data.
 
 Douban and Filmarks connectors remain present as disabled capabilities. No request is made while a connector is disabled.
+
+## Read model contract
+
+Ranking, search, and detail endpoints depend on a catalog repository rather than directly on a connector. This keeps third-party acquisition separate from public reads and lets fixture/demo data exercise the entire UI without claiming to be live. Every response exposes `data_mode`, source timestamps, source-level observations, missing sources, and completeness.
+
+The composite score is calculated only from available observations. Missing sources are not converted into zero-valued ratings. The default threshold mode requires both Bangumi > 1,000 and MAL > 20,000 votes; unrestricted mode permits single-source entries and labels their completeness.
 
 ## Privacy boundary
 

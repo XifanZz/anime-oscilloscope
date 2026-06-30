@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     )
 
     env: str = "development"
-    cors_origins: list[str] = ["http://localhost:5173"]
+    cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/anime_oscilloscope"
     bangumi_token: str | None = None
     mal_client_id: str | None = None

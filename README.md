@@ -9,9 +9,9 @@ Anime Oscilloscope treats an anime title as a signal that changes over time: com
 
 ## Current phase / 当前阶段
 
-Phase 2B adds the official MAL client contract and evidence-based Bangumi-to-MAL candidate matching. Live MAL reads remain disabled until a local `APP_MAL_CLIENT_ID` is configured; fixture-based CI is fully operational without secrets.
+Phase 3 adds an API-driven composite ranking, year/quarter/region/type/threshold filters, catalog search, and anime detail views. Until Supabase is configured, the UI uses clearly labelled fictional demo records; they are never presented as live source data.
 
-第二阶段 B 已加入 MAL 官方客户端契约，以及基于标题、日期、类型、集数和季度签名证据的跨站匹配。未配置本地 `APP_MAL_CLIENT_ID` 时不会请求 MAL；CI 完全使用固定响应，不依赖密钥。
+第三阶段已加入 API 驱动的综合排行榜、年份/季度/地区/类型/门槛筛选、目录搜索和动画详情。Supabase 尚未配置时，界面只使用醒目标注的虚构演示条目，绝不会将其展示为实时来源数据。
 
 ## Architecture / 架构
 
@@ -44,6 +44,8 @@ python -m venv .venv
 
 Open `http://localhost:8000/docs` or `http://localhost:8000/api/v1/health`.
 
+Start both services to exercise the interactive ranking. The web app defaults to `http://127.0.0.1:8000/api/v1`; deployment can override it with `VITE_API_BASE_URL`.
+
 ## Verification / 验证
 
 ```powershell
@@ -74,8 +76,8 @@ The command prints scored candidates and performs no database writes. Never past
 
 ## Data policy / 数据政策
 
-- Phase 1 enables no live rating connector.
-- Bangumi and MAL are the first planned sources.
+- The Phase 3 interactive catalog is explicitly fictional demo data until the database read repository is enabled.
+- Bangumi and MAL are the only enabled connector contracts in the first release.
 - Douban and Filmarks remain disabled until written authorization permits reuse.
 - The site never asks for Bilibili credentials or session cookies.
 - NSFW works and the complete *My Hero Academia* animation franchise are excluded from ingestion.
