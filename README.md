@@ -9,9 +9,9 @@ Anime Oscilloscope treats an anime title as a signal that changes over time: com
 
 ## Current phase / 当前阶段
 
-Phase 2A adds the normalized source contract, a read-only Bangumi connector, eligibility policies, response fixtures, and a seasonal discovery command. PostgreSQL writes and MAL synchronization remain disabled until the following checkpoint.
+Phase 2B adds the official MAL client contract and evidence-based Bangumi-to-MAL candidate matching. Live MAL reads remain disabled until a local `APP_MAL_CLIENT_ID` is configured; fixture-based CI is fully operational without secrets.
 
-第二阶段 A 已加入统一数据源契约、只读 Bangumi 连接器、收录规则、固定响应测试和季度发现命令。数据库写入与 MAL 同步将在后续检查点启用。
+第二阶段 B 已加入 MAL 官方客户端契约，以及基于标题、日期、类型、集数和季度签名证据的跨站匹配。未配置本地 `APP_MAL_CLIENT_ID` 时不会请求 MAL；CI 完全使用固定响应，不依赖密钥。
 
 ## Architecture / 架构
 
@@ -60,6 +60,17 @@ npm.cmd run build
 ```
 
 The command calls the public API and prints normalized eligibility decisions. It performs no database writes.
+
+### Read-only MAL candidate matching / 只读跨站匹配
+
+Add your MAL client ID to the untracked `.env` file, then run:
+
+```powershell
+.venv\Scripts\python -m anime_oscilloscope.jobs.match_mal `
+  --bangumi-id 255209 --limit 10
+```
+
+The command prints scored candidates and performs no database writes. Never paste or commit the client ID.
 
 ## Data policy / 数据政策
 

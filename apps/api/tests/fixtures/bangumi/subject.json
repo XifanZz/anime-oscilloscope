@@ -7,6 +7,7 @@
   "nsfw": false,
   "date": "2026-07-03",
   "platform": "TV",
+  "total_episodes": 12,
   "images": {
     "large": "https://example.invalid/signal-large.jpg",
     "common": "https://example.invalid/signal-common.jpg"

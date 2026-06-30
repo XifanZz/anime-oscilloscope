@@ -46,6 +46,7 @@ class NormalizedAnime(BaseModel):
     image_url: str | None = None
     air_date: date | None = None
     end_date: date | None = None
+    episode_count: int | None = Field(default=None, ge=0)
     status: AirStatus = AirStatus.UNKNOWN
     media_type: MediaType = MediaType.OTHER
     regions: set[str] = Field(default_factory=set)
@@ -68,7 +69,8 @@ class NormalizedEpisode(BaseModel):
 
 
 class SubjectPage(BaseModel):
-    total: int = Field(ge=0)
+    total: int | None = Field(default=None, ge=0)
     limit: int = Field(gt=0)
     offset: int = Field(ge=0)
+    has_next: bool = False
     items: list[NormalizedAnime]

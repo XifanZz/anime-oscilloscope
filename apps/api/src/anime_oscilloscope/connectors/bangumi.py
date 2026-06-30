@@ -6,6 +6,7 @@ from typing import Any
 import httpx2 as httpx
 
 from anime_oscilloscope.connectors.base import (
+    ConnectorCapability,
     ConnectorError,
     ConnectorResponseError,
     SourceConnector,
@@ -200,6 +201,11 @@ def normalize_subject(payload: Mapping[str, Any], *, as_of: date | None = None) 
         summary=str(payload.get("summary") or "").strip() or None,
         image_url=image_url,
         air_date=air_date,
+        episode_count=(
+            int(payload["total_episodes"])
+            if isinstance(payload.get("total_episodes"), int)
+            else None
+        ),
         status=status,
         media_type=normalize_media_type(payload.get("platform")),
         regions=infer_regions(payload),
@@ -248,6 +254,15 @@ def build_discovery_body(start_date: date, end_date: date) -> dict[str, Any]:
 
 class BangumiConnector(SourceConnector):
     source = SourceCode.BANGUMI
+    capabilities = frozenset(
+        {
+            ConnectorCapability.DISCOVERY,
+            ConnectorCapability.SEARCH,
+            ConnectorCapability.SUBJECT,
+            ConnectorCapability.EPISODES,
+            ConnectorCapability.RATINGS,
+        }
+    )
 
     def __init__(
         self,
@@ -340,12 +355,35 @@ class BangumiConnector(SourceConnector):
             total=int(payload.get("total", len(items))),
             limit=int(payload.get("limit", limit)) or limit,
             offset=int(payload.get("offset", offset)),
+            has_next=int(payload.get("offset", offset)) + len(items)
+            < int(payload.get("total", len(items))),
             items=items,
         )
 
     async def fetch_subject(self, external_id: str) -> NormalizedAnime:
         payload = await self._request_json("GET", f"/v0/subjects/{int(external_id)}")
         return normalize_subject(payload)
+
+    async def search(self, query: str, *, limit: int = 10) -> list[NormalizedAnime]:
+        normalized_query = query.strip()
+        if not normalized_query:
+            return []
+        if not 1 <= limit <= 50:
+            raise ValueError("limit must be between 1 and 50")
+        payload = await self._request_json(
+            "POST",
+            "/v0/search/subjects",
+            params={"limit": limit, "offset": 0},
+            json={
+                "keyword": normalized_query,
+                "sort": "match",
+                "filter": {"type": [2], "nsfw": False},
+            },
+        )
+        data = payload.get("data")
+        if not isinstance(data, list):
+            raise ConnectorResponseError("Bangumi search response is missing data[]")
+        return [normalize_subject(item) for item in data if isinstance(item, Mapping)]
 
     async def fetch_episodes(self, external_id: str) -> list[NormalizedEpisode]:
         subject_id = str(int(external_id))

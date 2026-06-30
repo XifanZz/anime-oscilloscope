@@ -31,3 +31,25 @@ Cross-border productions remain eligible whenever a target-region participant is
 ## Disabled sources
 
 Douban and Filmarks connectors remain disabled until written authorization permits reuse. Disabled connectors make no network requests.
+
+## MyAnimeList
+
+- API base: `https://api.myanimelist.net/v2`.
+- Public catalog reads authenticate with the official `X-MAL-CLIENT-ID` header.
+- Seasonal discovery: `GET /anime/season/{year}/{season}`.
+- Candidate search: `GET /anime?q=...`.
+- Detail and rating population: `GET /anime/{anime_id}` with an explicit `fields` list.
+- MAL does not expose the episode timeline required by this product, so that capability is explicitly unavailable and Bangumi remains the episode source.
+
+Create an API client at <https://myanimelist.net/apiconfig>. Store only its client ID in the untracked local `.env` file as `APP_MAL_CLIENT_ID`; never commit it.
+
+## Cross-source mapping
+
+Bangumi is the primary catalog. MAL candidates are ranked using reproducible evidence:
+
+- title and alias similarity: 65%;
+- air-date proximity: 20%;
+- media-type agreement: 10%;
+- episode-count agreement: 5%.
+
+Automatic approval additionally requires a title score of at least 0.92, overall confidence of at least 0.88, and no risk reason. Different media types, distant dates, episode-count conflicts, or inconsistent season/Part/movie/OVA signatures force review or rejection.

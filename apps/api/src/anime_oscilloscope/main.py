@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from anime_oscilloscope import __version__
 from anime_oscilloscope.config import get_settings
+from anime_oscilloscope.connectors import BangumiConnector, MALConnector
 from anime_oscilloscope.schemas import (
     HealthResponse,
     ScoringRule,
@@ -39,19 +40,32 @@ def health() -> HealthResponse:
 def service_meta() -> ServiceMetaResponse:
     return ServiceMetaResponse(
         sources=[
-            SourceStatus(code="bangumi", label="Bangumi", enabled=False, reason="Phase 2"),
-            SourceStatus(code="mal", label="MyAnimeList", enabled=False, reason="Phase 2"),
+            SourceStatus(
+                code="bangumi",
+                label="Bangumi",
+                enabled=True,
+                capabilities=sorted(BangumiConnector.capabilities),
+            ),
+            SourceStatus(
+                code="mal",
+                label="MyAnimeList",
+                enabled=bool(settings.mal_client_id),
+                reason=None if settings.mal_client_id else "Configure APP_MAL_CLIENT_ID",
+                capabilities=sorted(MALConnector.capabilities),
+            ),
             SourceStatus(
                 code="douban",
                 label="豆瓣",
                 enabled=False,
                 reason="Requires written authorization",
+                capabilities=[],
             ),
             SourceStatus(
                 code="filmarks",
                 label="Filmarks",
                 enabled=False,
                 reason="Requires written authorization",
+                capabilities=[],
             ),
         ],
         scoring=ScoringRule(

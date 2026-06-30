@@ -1,0 +1,58 @@
+{
+  "data": [
+    {
+      "node": {
+        "id": 800001,
+        "title": "Signal Anime",
+        "alternative_titles": {
+          "synonyms": ["Signal no Anime"],
+          "en": "Signal Anime",
+          "ja": "シグナルアニメ"
+        },
+        "start_date": "2026-07-03",
+        "end_date": "2026-09-18",
+        "mean": 8.32,
+        "rank": 108,
+        "num_scoring_users": 24050,
+        "nsfw": "white",
+        "media_type": "tv",
+        "status": "currently_airing",
+        "genres": [{"id": 24, "name": "Sci-Fi"}],
+        "num_episodes": 12
+      }
+    },
+    {
+      "node": {
+        "id": 800002,
+        "title": "Signal Anime Movie",
+        "alternative_titles": {"synonyms": ["Signal no Anime Movie"], "en": "", "ja": ""},
+        "start_date": "2026-12-01",
+        "mean": 7.9,
+        "rank": 500,
+        "num_scoring_users": 5000,
+        "nsfw": "white",
+        "media_type": "movie",
+        "status": "not_yet_aired",
+        "genres": [],
+        "num_episodes": 1
+      }
+    },
+    {
+      "node": {
+        "id": 800003,
+        "title": "Unrelated Cooking Show",
+        "alternative_titles": {"synonyms": [], "en": "", "ja": ""},
+        "start_date": "2020-01-01",
+        "mean": 6.5,
+        "rank": 5000,
+        "num_scoring_users": 300,
+        "nsfw": "white",
+        "media_type": "tv",
+        "status": "finished_airing",
+        "genres": [],
+        "num_episodes": 24
+      }
+    }
+  ],
+  "paging": {}
+}

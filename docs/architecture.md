@@ -6,6 +6,9 @@
 flowchart LR
   B[Bangumi API] --> J[Python sync jobs]
   M[MyAnimeList API] --> J
+  B --> X[Evidence-based matcher]
+  M --> X
+  X --> R[Automatic mapping or review queue]
   J --> Q[(Supabase PostgreSQL)]
   J --> V[(pgvector)]
   G[GitHub Actions scheduler] --> J
@@ -32,6 +35,12 @@ Every rating source will implement the same conceptual operations:
 3. fetch current score and rating population;
 4. normalize source types and dates;
 5. return typed results without writing directly to the database.
+
+Connectors declare capabilities. Bangumi supports episode timelines; MAL does not. Cross-source mapping never invents a missing capability.
+
+## Mapping decisions
+
+The matcher scores title aliases, air-date proximity, media type, and episode count. Installment signatures such as season number, Part, movie, and OVA act as review gates. Automatic mapping is allowed only when confidence is high and no risk reason is present; all other plausible candidates remain versioned review data.
 
 Douban and Filmarks connectors remain present as disabled capabilities. No request is made while a connector is disabled.
 

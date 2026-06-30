@@ -33,6 +33,7 @@ def test_normalizes_bangumi_subject_without_losing_provenance() -> None:
     assert anime.aliases == ["Signal Anime", "信号番"]
     assert anime.regions == {"JP"}
     assert anime.media_type is MediaType.TV
+    assert anime.episode_count == 12
     assert anime.status is AirStatus.UPCOMING
     assert anime.rating is not None
     assert anime.rating.score == 8.4

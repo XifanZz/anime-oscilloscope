@@ -19,6 +19,7 @@ class SourceStatus(BaseModel):
     label: str
     enabled: bool
     reason: str | None = None
+    capabilities: list[str] = Field(default_factory=list)
 
 
 class ScoringRule(BaseModel):
