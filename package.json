@@ -1,0 +1,17 @@
+{
+  "name": "anime-oscilloscope",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "npm --workspace @anime-oscilloscope/web run dev",
+    "build": "npm --workspace @anime-oscilloscope/web run build",
+    "test": "npm --workspace @anime-oscilloscope/web run test",
+    "typecheck": "npm --workspace @anime-oscilloscope/web run typecheck"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
