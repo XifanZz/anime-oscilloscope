@@ -46,14 +46,14 @@ flowchart LR
   W --> L[(Browser localStorage)]
   G[GitHub Actions] --> J
   P[GitHub Pages] --> W
-  R[Render] --> A
+  R[Vercel Functions] --> A
 ```
 
 - Frontend: React 19, TypeScript 6, Vite 8
 - API: Python 3.12+, FastAPI, Pydantic
 - Data design: PostgreSQL, pgvector, forward-only SQL migrations
 - AI: optional quantized FastEmbed/BGE provider; deterministic CI fallback
-- Delivery: GitHub Actions, GitHub Pages, Render
+- Delivery: GitHub Actions, GitHub Pages, Vercel Hobby Functions
 
 More detail: [architecture](docs/architecture.md), [data dictionary](docs/data-dictionary.md), [methodology](docs/methodology.md).
 
