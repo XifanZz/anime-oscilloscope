@@ -24,3 +24,13 @@ Vite production build:  passed
 ## External boundary
 
 No database password, source credential, cookie, or user viewing record is committed. Live mode is not enabled merely by merging this phase; Supabase migrations, repository secrets, an initial sync, and Render configuration are separate explicit operations.
+
+## Production smoke evidence
+
+On 2026-07-01 the guarded workflow completed its first authenticated Supabase sync:
+
+- [5-title smoke run](https://github.com/XifanZz/anime-oscilloscope/actions/runs/28500348974): 5 catalog writes, 44 episode markers, 5 MAL matching attempts, 0 failures.
+- [20-title seed run](https://github.com/XifanZz/anime-oscilloscope/actions/runs/28500531329): completed successfully.
+- [final seasonal page](https://github.com/XifanZz/anime-oscilloscope/actions/runs/28500580542): completed successfully.
+
+The remaining seasonal pages are filled by the guarded daily offset rotation. Workflow logs mask database and MAL credentials.
