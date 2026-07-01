@@ -8,7 +8,7 @@
 - Sync attempts and partial failures are retained in `sync_run` and `source_connector`.
 - Snapshot selection enforces the launch date and daily/weekly/monthly/yearly cadence.
 - The daily workflow remains disabled until `LIVE_SYNC_ENABLED=true` and required secrets exist.
-- The public Pages fallback remains available while Supabase and Render are unprovisioned.
+- The public Pages fallback remains available while the Vercel API is unprovisioned.
 
 ## Verification target
 
@@ -23,7 +23,7 @@ Vite production build:  passed
 
 ## External boundary
 
-No database password, source credential, cookie, or user viewing record is committed. Live mode is not enabled merely by merging this phase; Supabase migrations, repository secrets, an initial sync, and Render configuration are separate explicit operations.
+No database password, source credential, cookie, or user viewing record is committed. Live mode requires Supabase migrations, repository secrets, an initial sync, and Vercel environment configuration as separate explicit operations.
 
 ## Production smoke evidence
 

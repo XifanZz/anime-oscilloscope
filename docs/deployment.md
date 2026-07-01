@@ -4,17 +4,15 @@
 
 `v0.7.0-demo` deploys fictional, clearly labelled data by default. The PostgreSQL read repository and idempotent sync writer are available but activate only when `APP_REPOSITORY_BACKEND=postgres`; a live public launch still requires migrations, approved credentials, and an initial successful sync.
 
-## Render API
+## Vercel API
 
-1. Create a new Blueprint from `render.yaml`.
-2. Keep `APP_SEMANTIC_BACKEND=hash` on the free demo instance.
-3. Configure `APP_DATABASE_URL`, `APP_BANGUMI_TOKEN`, and `APP_MAL_CLIENT_ID` only in Render secrets.
-4. `render.yaml` uses `APP_REPOSITORY_BACKEND=postgres`; deploy it only after migrations and an initial successful sync.
+1. Import `XifanZz/anime-oscilloscope` into a personal Vercel Hobby account.
+2. Set the project Root Directory to `apps/api`; Vercel reads the FastAPI entrypoint from `pyproject.toml`.
+3. Add `APP_DATABASE_URL`, `APP_MAL_CLIENT_ID`, `APP_ENV=production`, `APP_REPOSITORY_BACKEND=postgres`, `APP_SEMANTIC_BACKEND=hash`, and `APP_CORS_ORIGINS=https://xifanzz.github.io`.
+4. Deploy with project name `anime-oscilloscope-api`.
 5. Verify that `/api/v1/health` reports `data_mode: live`, then check `/docs` and the semantic-search rate-limit headers.
 
-Free instances may cold-start. The frontend surfaces API errors and retains browser-local Tier data.
-
-Until Render is provisioned, the Pages build falls back to bundled fictional demo responses for ranking, history, search, AI retrieval, and local imports. The `demo` data-mode disclosure remains visible. Set `VITE_DISABLE_DEMO_FALLBACK=true` in strict environments where an unavailable API should be a hard failure.
+Vercel Functions are stateless; long-running discovery and sampling remain in GitHub Actions. The frontend retains browser-local Tier data and falls back to bundled fictional demo responses if the hosted API is unavailable. Set `VITE_DISABLE_DEMO_FALLBACK=true` in strict environments where API failure should be fatal.
 
 ## GitHub Pages
 
@@ -24,7 +22,7 @@ Until Render is provisioned, the Pages build falls back to bundled fictional dem
 4. Push `main`. The Pages workflow builds with base path `/anime-oscilloscope/`.
 5. Verify `https://xifanzz.github.io/anime-oscilloscope/` in a clean browser profile.
 
-The workflow falls back to `https://anime-oscilloscope-api.onrender.com/api/v1` when the variable is absent.
+The workflow falls back to `https://anime-oscilloscope-api.vercel.app/api/v1` when the variable is absent.
 
 ## Supabase migration order
 
@@ -45,7 +43,7 @@ Use a dedicated service role only in backend jobs. Never expose database or sour
 
 - `npm ci` and all verification commands pass.
 - Chromium E2E is green and no secrets appear in tracked files.
-- Render health check succeeds after cold start.
+- Vercel health check reports `data_mode: live`.
 - Pages requests the deployed API rather than localhost.
 - Demo/live mode and active semantic engine are visible.
 - Git tag and changelog version match.
