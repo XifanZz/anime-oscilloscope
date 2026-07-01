@@ -3,7 +3,7 @@
 > 多源动画评分采样与分析平台 · Multi-source anime rating sampling and analytics.
 
 [![Release](https://img.shields.io/badge/release-v0.7.0--demo-7ef7c7)](CHANGELOG.md)
-[![API tests](https://img.shields.io/badge/API_tests-60_passed-73b7ff)](docs/verification/phase-07.md)
+[![API tests](https://img.shields.io/badge/API_tests-66_passed-73b7ff)](docs/verification/phase-08.md)
 [![Web tests](https://img.shields.io/badge/Web_tests-18_passed-73b7ff)](docs/verification/phase-07.md)
 [![E2E](https://img.shields.io/badge/Chromium_E2E-4_passed-f6d36d)](e2e/critical-flows.spec.ts)
 [![License](https://img.shields.io/badge/license-MIT-ff7a9d)](LICENSE)
@@ -29,7 +29,7 @@ The public Pages build automatically falls back to the same labelled static demo
 | Local Tier List / 从夯到拉 | Multiple libraries, drag/drop, ordering, persistence, PNG export |
 | Explainable AI search / AI 找番 | Chinese intent parsing, 512-D provider contract, reasons and confidence |
 | Private file import / 本地导入 | CSV/JSON parsing in browser, credential rejection, explicit confirmation |
-| Quality gates / 质量门禁 | 60 API tests, 18 web tests, 4 Chromium E2E flows |
+| Quality gates / 质量门禁 | 66 API tests, 18 web tests, 4 Chromium E2E flows |
 
 AI baseline on 50 Chinese queries: Recall@1 `0.94`, Recall@10 `0.98`, mean in-process latency about `0.49 ms`. See [AI evaluation](docs/ai-evaluation.md); these are deterministic fallback metrics, not BGE claims.
 

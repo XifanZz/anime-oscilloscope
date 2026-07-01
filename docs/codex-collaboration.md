@@ -32,4 +32,4 @@ AI output was not accepted blindly:
 
 ## Resume framing
 
-“Designed and implemented a multi-source anime analytics platform with React/TypeScript, FastAPI, PostgreSQL/pgvector schemas, explainable 512-D retrieval, privacy-preserving local imports, 60 API tests, 18 web tests, and Chromium E2E. Used Codex as an engineering copilot while retaining human control over product policy, data compliance, review gates, and acceptance metrics.”
+“Designed and implemented a multi-source anime analytics platform with React/TypeScript, FastAPI, PostgreSQL/pgvector schemas, explainable 512-D retrieval, privacy-preserving local imports, 66 API tests, 18 web tests, and Chromium E2E. Used Codex as an engineering copilot while retaining human control over product policy, data compliance, review gates, and acceptance metrics.”

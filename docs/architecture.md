@@ -48,7 +48,7 @@ Douban and Filmarks connectors remain present as disabled capabilities. No reque
 
 ## Read model contract
 
-Ranking, search, and detail endpoints depend on a catalog repository rather than directly on a connector. This keeps third-party acquisition separate from public reads and lets fixture/demo data exercise the entire UI without claiming to be live. Every response exposes `data_mode`, source timestamps, source-level observations, missing sources, and completeness.
+Ranking, search, and detail endpoints depend on a catalog repository rather than directly on a connector. `APP_REPOSITORY_BACKEND` explicitly selects the in-memory demo or PostgreSQL implementation. This keeps third-party acquisition separate from public reads and lets fixture/demo data exercise the entire UI without claiming to be live. Every response exposes `data_mode`, source timestamps, source-level observations, missing sources, and completeness.
 
 The composite score is calculated only from available observations. Missing sources are not converted into zero-valued ratings. The default threshold mode requires both Bangumi > 1,000 and MAL > 20,000 votes; unrestricted mode permits single-source entries and labels their completeness.
 

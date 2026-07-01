@@ -2,14 +2,15 @@
 
 ## Release boundary
 
-`v0.7.0-demo` deploys fictional, clearly labelled data. Configuring a database URL alone does not switch the current in-memory read repository to live mode. A live public launch additionally requires the production repository/sync implementation and approved credentials.
+`v0.7.0-demo` deploys fictional, clearly labelled data by default. The PostgreSQL read repository and idempotent sync writer are available but activate only when `APP_REPOSITORY_BACKEND=postgres`; a live public launch still requires migrations, approved credentials, and an initial successful sync.
 
 ## Render API
 
 1. Create a new Blueprint from `render.yaml`.
 2. Keep `APP_SEMANTIC_BACKEND=hash` on the free demo instance.
-3. Configure `APP_DATABASE_URL`, `APP_BANGUMI_TOKEN`, and `APP_MAL_CLIENT_ID` only in Render secrets when live ingestion is implemented.
-4. Verify `/api/v1/health`, `/docs`, and the semantic-search rate-limit headers.
+3. Configure `APP_DATABASE_URL`, `APP_BANGUMI_TOKEN`, and `APP_MAL_CLIENT_ID` only in Render secrets.
+4. Keep `APP_REPOSITORY_BACKEND=demo` through migration and initial sync, then change it to `postgres`.
+5. Verify that `/api/v1/health` reports `data_mode: live`, then check `/docs` and the semantic-search rate-limit headers.
 
 Free instances may cold-start. The frontend surfaces API errors and retains browser-local Tier data.
 
@@ -32,6 +33,11 @@ Apply SQL files in lexical order:
 1. `001_initial_schema.sql`
 2. `002_source_payload_cache.sql`
 3. `003_mapping_candidates.sql`
+4. `004_live_repository.sql`
+
+## Scheduled synchronization
+
+The `Live data sync` workflow is inert by default. Add repository secrets `APP_DATABASE_URL`, `APP_BANGUMI_TOKEN`, and `APP_MAL_CLIENT_ID`, then set repository variable `LIVE_SYNC_ENABLED=true`. It runs at 03:17 China Standard Time, rotates through seven seasonal discovery pages across the week, and can also be started manually with an explicit offset. Each execution records `sync_run`, applies the configured sampling cadence, keeps failed-source snapshots intact, and writes ambiguous MAL matches to `mapping_candidate`.
 
 Use a dedicated service role only in backend jobs. Never expose database or source credentials through Vite variables.
 

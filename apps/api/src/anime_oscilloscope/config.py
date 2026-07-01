@@ -1,3 +1,4 @@
+from datetime import date
 from functools import lru_cache
 from typing import Literal
 
@@ -15,6 +16,8 @@ class Settings(BaseSettings):
     env: str = "development"
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/anime_oscilloscope"
+    repository_backend: Literal["demo", "postgres"] = "demo"
+    tracking_launch_date: date = date(2026, 7, 1)
     bangumi_token: str | None = None
     mal_client_id: str | None = None
     project_url: str = "https://github.com/XifanZz/anime-oscilloscope"

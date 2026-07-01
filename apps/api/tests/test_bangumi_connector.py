@@ -41,6 +41,12 @@ def test_normalizes_bangumi_subject_without_losing_provenance() -> None:
     assert anime.source_url == "https://bgm.tv/subject/900001"
 
 
+def test_started_bangumi_subject_is_treated_as_airing_until_mal_confirms_completion() -> None:
+    anime = normalize_subject(fixture("subject.json"), as_of=date(2026, 7, 4))
+
+    assert anime.status is AirStatus.AIRING
+
+
 @pytest.mark.parametrize(
     ("platform", "expected"),
     [

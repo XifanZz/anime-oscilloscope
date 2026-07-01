@@ -5,8 +5,7 @@ from anime_oscilloscope import __version__
 from anime_oscilloscope.catalog import RankingPage, rank_catalog, search_catalog
 from anime_oscilloscope.config import get_settings
 from anime_oscilloscope.connectors import BangumiConnector, MALConnector
-from anime_oscilloscope.demo_catalog import DEMO_CATALOG
-from anime_oscilloscope.demo_history import DEMO_HISTORY
+from anime_oscilloscope.database import create_repositories
 from anime_oscilloscope.domain import MediaType, SourceCode
 from anime_oscilloscope.history import RatingHistoryResponse
 from anime_oscilloscope.rate_limit import FixedWindowRateLimiter
@@ -28,8 +27,9 @@ from anime_oscilloscope.semantic import (
 )
 
 settings = get_settings()
+catalog_repository, history_repository = create_repositories(settings)
 semantic_service = SemanticSearchService(
-    DEMO_CATALOG,
+    catalog_repository,
     create_embedding_provider(settings.semantic_backend, settings.semantic_model_name),
 )
 semantic_limiter = FixedWindowRateLimiter(limit=30, window_seconds=60)
@@ -65,7 +65,9 @@ router = APIRouter(prefix="/api/v1")
 
 @router.get("/health", response_model=HealthResponse, tags=["system"])
 def health() -> HealthResponse:
-    return HealthResponse(version=__version__, environment=settings.env)
+    return HealthResponse(
+        version=__version__, environment=settings.env, data_mode=catalog_repository.data_mode
+    )
 
 
 @router.get("/meta", response_model=ServiceMetaResponse, tags=["system"])
@@ -131,7 +133,7 @@ def rankings(
     page_size: int = Query(default=20, ge=1, le=100),
 ) -> RankingPage:
     return rank_catalog(
-        DEMO_CATALOG,
+        catalog_repository,
         year=year,
         quarter=quarter,
         region=region,
@@ -148,15 +150,17 @@ def anime_search(
     q: str = Query(min_length=1, max_length=100),
     limit: int = Query(default=20, ge=1, le=50),
 ) -> SearchResponse:
-    items = search_catalog(DEMO_CATALOG, q, limit)
-    return SearchResponse(data_mode=DEMO_CATALOG.data_mode, query=q, total=len(items), items=items)
+    items = search_catalog(catalog_repository, q, limit)
+    return SearchResponse(
+        data_mode=catalog_repository.data_mode, query=q, total=len(items), items=items
+    )
 
 
 @router.get("/anime/index", response_model=CatalogIndexResponse, tags=["catalog"])
 def anime_catalog_index() -> CatalogIndexResponse:
-    items = DEMO_CATALOG.list_all()
+    items = catalog_repository.list_all()
     return CatalogIndexResponse(
-        data_mode=DEMO_CATALOG.data_mode,
+        data_mode=catalog_repository.data_mode,
         total=len(items),
         items=items,
     )
@@ -187,13 +191,13 @@ def anime_semantic_search(
 
 @router.get("/anime/{anime_id}", response_model=AnimeDetailResponse, tags=["catalog"])
 def anime_detail(anime_id: str) -> AnimeDetailResponse:
-    anime = DEMO_CATALOG.get(anime_id)
+    anime = catalog_repository.get(anime_id)
     if anime is None:
         raise HTTPException(status_code=404, detail="Anime not found")
     expected = {SourceCode.BANGUMI, SourceCode.MAL}
     present = {rating.source for rating in anime.ratings}
     return AnimeDetailResponse(
-        data_mode=DEMO_CATALOG.data_mode,
+        data_mode=catalog_repository.data_mode,
         anime=anime,
         composite_score=composite_score(anime.ratings),
         completeness=round(100 * len(present & expected) / len(expected)),
@@ -207,13 +211,13 @@ def anime_detail(anime_id: str) -> AnimeDetailResponse:
     tags=["ratings"],
 )
 def anime_rating_history(anime_id: str) -> RatingHistoryResponse:
-    if DEMO_CATALOG.get(anime_id) is None:
+    if catalog_repository.get(anime_id) is None:
         raise HTTPException(status_code=404, detail="Anime not found")
-    history = DEMO_HISTORY.get(anime_id)
+    history = history_repository.get(anime_id)
     if history is None:
         raise HTTPException(status_code=404, detail="Rating history is not available")
     return RatingHistoryResponse(
-        data_mode=DEMO_HISTORY.data_mode,
+        data_mode=history_repository.data_mode,
         history=history,
         sampling_policy={
             "airing": "daily",

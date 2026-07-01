@@ -6,7 +6,7 @@ The SQL source of truth is `database/migrations`. IDs are internal UUIDs unless 
 
 | Entity | Purpose | Important fields |
 |---|---|---|
-| `anime` | Canonical title catalog | Bangumi ID, names, aliases, dates, status, media type, regions, exclusion flags |
+| `anime` | Canonical title catalog | Bangumi ID, names, aliases, dates, status, media type, regions, tags, exclusion flags |
 | `external_mapping` | Cross-source identity | source, external ID, confidence, review status, evidence |
 | `mapping_candidate` | Versioned human-review queue | primary/candidate IDs, confidence, disposition, evidence |
 | `episode` | Bangumi episode timeline | episode number, localized titles, air date |
@@ -20,7 +20,7 @@ The SQL source of truth is `database/migrations`. IDs are internal UUIDs unless 
 | `current_rating` | One latest row per anime and source | Replaced only by a successful sample |
 | `rating_snapshot` | One anime/source/sample timestamp | Permanent |
 | `sync_run` | One connector job execution | Permanent operational history |
-| `source_connector` | One source capability/status row | Latest status and success time |
+| `source_connector` | One source capability/status row | Latest attempt, success time, and retained error |
 
 Scores use a 0–10 scale. `rating_count` is non-negative. A missing source has no row; it is not represented as score zero.
 

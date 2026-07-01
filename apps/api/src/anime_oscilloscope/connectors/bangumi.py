@@ -174,7 +174,13 @@ def normalize_subject(payload: Mapping[str, Any], *, as_of: date | None = None) 
     normalized_name_cn = name_cn.strip() if isinstance(name_cn, str) and name_cn.strip() else None
     air_date = _parse_date(payload.get("date"))
     today = as_of or date.today()
-    status = AirStatus.UPCOMING if air_date and air_date > today else AirStatus.UNKNOWN
+    status = (
+        AirStatus.UPCOMING
+        if air_date and air_date > today
+        else AirStatus.AIRING
+        if air_date
+        else AirStatus.UNKNOWN
+    )
     images = payload.get("images")
     image_url = None
     if isinstance(images, Mapping):
