@@ -5,6 +5,7 @@
 - Add explicit demo/PostgreSQL repository selection for catalog and history reads.
 - Add idempotent catalog, mapping, rating snapshot, episode, and sync-run writes.
 - Add a guarded daily live-data workflow and Phase 8 deployment instructions.
+- Record successful authenticated Bangumi/MAL-to-Supabase production smoke runs.
 
 ## 0.7.0 - 2026-07-01
 

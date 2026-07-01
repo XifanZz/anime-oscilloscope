@@ -15,7 +15,7 @@ services:
       - key: APP_DATABASE_URL
         sync: false
       - key: APP_REPOSITORY_BACKEND
-        value: demo
+        value: postgres
       - key: APP_BANGUMI_TOKEN
         sync: false
       - key: APP_MAL_CLIENT_ID

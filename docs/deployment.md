@@ -9,7 +9,7 @@
 1. Create a new Blueprint from `render.yaml`.
 2. Keep `APP_SEMANTIC_BACKEND=hash` on the free demo instance.
 3. Configure `APP_DATABASE_URL`, `APP_BANGUMI_TOKEN`, and `APP_MAL_CLIENT_ID` only in Render secrets.
-4. Keep `APP_REPOSITORY_BACKEND=demo` through migration and initial sync, then change it to `postgres`.
+4. `render.yaml` uses `APP_REPOSITORY_BACKEND=postgres`; deploy it only after migrations and an initial successful sync.
 5. Verify that `/api/v1/health` reports `data_mode: live`, then check `/docs` and the semantic-search rate-limit headers.
 
 Free instances may cold-start. The frontend surfaces API errors and retains browser-local Tier data.
