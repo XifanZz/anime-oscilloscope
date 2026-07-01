@@ -13,6 +13,8 @@
 
 Free instances may cold-start. The frontend surfaces API errors and retains browser-local Tier data.
 
+Until Render is provisioned, the Pages build falls back to bundled fictional demo responses for ranking, history, search, AI retrieval, and local imports. The `demo` data-mode disclosure remains visible. Set `VITE_DISABLE_DEMO_FALLBACK=true` in strict environments where an unavailable API should be a hard failure.
+
 ## GitHub Pages
 
 1. Create the public `XifanZz/anime-oscilloscope` repository.

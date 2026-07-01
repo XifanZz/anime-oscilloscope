@@ -82,17 +82,22 @@ export type HistoryResponse = {
   sampling_policy: Record<string, string>;
 };
 
+import { demoFallback } from "./demoFallback";
+
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/v1").replace(/\/$/, "");
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers: { Accept: "application/json", ...init?.headers },
-  });
-  if (!response.ok) {
-    throw new Error(`API 请求失败（${response.status}）`);
+  try {
+    const response = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers: { Accept: "application/json", ...init?.headers },
+    });
+    if (!response.ok) throw new Error(`API 请求失败（${response.status}）`);
+    return response.json() as Promise<T>;
+  } catch (error) {
+    if (import.meta.env.VITE_DISABLE_DEMO_FALLBACK === "true") throw error;
+    return demoFallback(path, init) as Promise<T>;
   }
-  return response.json() as Promise<T>;
 }
 
 export type RankingFilters = {

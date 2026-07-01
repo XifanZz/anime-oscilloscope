@@ -4,7 +4,7 @@
 
 [![Release](https://img.shields.io/badge/release-v0.7.0--demo-7ef7c7)](CHANGELOG.md)
 [![API tests](https://img.shields.io/badge/API_tests-60_passed-73b7ff)](docs/verification/phase-07.md)
-[![Web tests](https://img.shields.io/badge/Web_tests-17_passed-73b7ff)](docs/verification/phase-07.md)
+[![Web tests](https://img.shields.io/badge/Web_tests-18_passed-73b7ff)](docs/verification/phase-07.md)
 [![E2E](https://img.shields.io/badge/Chromium_E2E-4_passed-f6d36d)](e2e/critical-flows.spec.ts)
 [![License](https://img.shields.io/badge/license-MIT-ff7a9d)](LICENSE)
 
@@ -18,6 +18,8 @@ Anime Oscilloscope treats ratings as time-varying signals. Source scores are obs
 
 `v0.7.0-demo` 是可复现的作品集演示版。由于尚未配置真实 Supabase 与获批 MAL 凭据，默认部署使用醒目标注的虚构数据，不会伪装成实时评分。
 
+The public Pages build automatically falls back to the same labelled static demo contract when the hosted API is unavailable. This keeps the portfolio interaction usable without disguising demo records as live data. Set `VITE_DISABLE_DEMO_FALLBACK=true` to make API failure strict.
+
 ## Product capabilities / 产品能力
 
 | Capability | Evidence |
@@ -27,7 +29,7 @@ Anime Oscilloscope treats ratings as time-varying signals. Source scores are obs
 | Local Tier List / 从夯到拉 | Multiple libraries, drag/drop, ordering, persistence, PNG export |
 | Explainable AI search / AI 找番 | Chinese intent parsing, 512-D provider contract, reasons and confidence |
 | Private file import / 本地导入 | CSV/JSON parsing in browser, credential rejection, explicit confirmation |
-| Quality gates / 质量门禁 | 60 API tests, 17 web tests, 4 Chromium E2E flows |
+| Quality gates / 质量门禁 | 60 API tests, 18 web tests, 4 Chromium E2E flows |
 
 AI baseline on 50 Chinese queries: Recall@1 `0.94`, Recall@10 `0.98`, mean in-process latency about `0.49 ms`. See [AI evaluation](docs/ai-evaluation.md); these are deterministic fallback metrics, not BGE claims.
 

@@ -13,7 +13,7 @@
 
 ```text
 API unit/integration: 60 passed
-Web component/model:   17 passed
+Web component/model:   18 passed
 Chromium E2E:            4 passed
 Semantic evaluation:    50 cases, Recall@1 0.94, Recall@10 0.98
 TypeScript:              passed
@@ -23,4 +23,4 @@ Vite production build:  passed
 
 ## External publication status
 
-At audit time the local repository had no Git remote and GitHub CLI was unavailable. Local release completion does not imply that the repository, Render service, Supabase database, or Pages site has been created. Follow `docs/deployment.md` with an authenticated GitHub connection.
+The public repository and GitHub Pages site are published. Pages uses an explicit, clearly labelled static demo fallback while the Render service and Supabase live repository remain unprovisioned. Follow `docs/deployment.md` to activate live backend data.
