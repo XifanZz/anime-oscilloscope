@@ -1,9 +1,10 @@
+import json
 from datetime import date
 from functools import lru_cache
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -14,7 +15,10 @@ class Settings(BaseSettings):
     )
 
     env: str = "development"
-    cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    cors_origins: Annotated[list[str], NoDecode] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/anime_oscilloscope"
     repository_backend: Literal["demo", "postgres"] = "demo"
     tracking_launch_date: date = date(2026, 7, 1)
@@ -28,6 +32,11 @@ class Settings(BaseSettings):
     @classmethod
     def parse_origins(cls, value: str | list[str]) -> list[str]:
         if isinstance(value, str):
+            stripped = value.strip()
+            if stripped.startswith("["):
+                decoded = json.loads(stripped)
+                if isinstance(decoded, list):
+                    return decoded
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
 
