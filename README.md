@@ -1,96 +1,126 @@
 # 番剧示波器 / Anime Oscilloscope
 
-> 多源动画评分采样与分析平台
-> A multi-source anime rating sampling and analytics platform.
+> 多源动画评分采样与分析平台 · Multi-source anime rating sampling and analytics.
 
-番剧示波器把动画视作随时间变化的信号：平台评分是观测值，定时任务负责采样，跨站聚合负责估计，评分人数门槛负责降噪。
+[![Release](https://img.shields.io/badge/release-v0.7.0--demo-7ef7c7)](CHANGELOG.md)
+[![API tests](https://img.shields.io/badge/API_tests-60_passed-73b7ff)](docs/verification/phase-07.md)
+[![Web tests](https://img.shields.io/badge/Web_tests-17_passed-73b7ff)](docs/verification/phase-07.md)
+[![E2E](https://img.shields.io/badge/Chromium_E2E-4_passed-f6d36d)](e2e/critical-flows.spec.ts)
+[![License](https://img.shields.io/badge/license-MIT-ff7a9d)](LICENSE)
 
-Anime Oscilloscope treats an anime title as a signal that changes over time: community ratings are observations, scheduled jobs sample them, and transparent weighting produces a combined estimate.
+番剧示波器把动画评分视作随时间变化的信号：平台评分是观测值，定时任务负责采样，透明权重负责聚合，来源新鲜度和人数门槛负责解释结果是否可靠。
 
-## Current phase / 当前阶段
+Anime Oscilloscope treats ratings as time-varying signals. Source scores are observations; sampling, transparent weighting, freshness, and vote thresholds explain how reliable each result is.
 
-Phase 6 adds explainable Chinese natural-language retrieval and privacy-preserving Bilibili file import. Production can enable quantized ONNX `BAAI/bge-small-zh-v1.5`; deterministic demo/CI retrieval always discloses that it is a fallback engine. CSV/JSON viewing records are parsed and matched locally, and every candidate requires confirmation.
+## Release status / 发布状态
 
-第六阶段已加入可解释的中文自然语言找番和保护隐私的 B站文件导入。生产环境可启用量化 ONNX `BAAI/bge-small-zh-v1.5`；演示与 CI 使用确定性回退引擎并明确标注。CSV/JSON 观看记录只在本地解析和匹配，每个候选都必须确认。
+`v0.7.0-demo` is a reproducible portfolio release. The deployed default uses clearly labelled fictional records because live Supabase and approved MAL credentials are not configured. It never presents demo values as live source data.
+
+`v0.7.0-demo` 是可复现的作品集演示版。由于尚未配置真实 Supabase 与获批 MAL 凭据，默认部署使用醒目标注的虚构数据，不会伪装成实时评分。
+
+## Product capabilities / 产品能力
+
+| Capability | Evidence |
+|---|---|
+| Composite ranking / 综合榜单 | Year, quarter, region, media type, vote thresholds, missing-source completeness |
+| Rating oscilloscope / 评分走势 | 87 daily demo snapshots, Bangumi/MAL/composite curves, 12 episode markers |
+| Local Tier List / 从夯到拉 | Multiple libraries, drag/drop, ordering, persistence, PNG export |
+| Explainable AI search / AI 找番 | Chinese intent parsing, 512-D provider contract, reasons and confidence |
+| Private file import / 本地导入 | CSV/JSON parsing in browser, credential rejection, explicit confirmation |
+| Quality gates / 质量门禁 | 60 API tests, 17 web tests, 4 Chromium E2E flows |
+
+AI baseline on 50 Chinese queries: Recall@1 `0.94`, Recall@10 `0.98`, mean in-process latency about `0.49 ms`. See [AI evaluation](docs/ai-evaluation.md); these are deterministic fallback metrics, not BGE claims.
 
 ## Architecture / 架构
 
-- React + TypeScript + Vite frontend
-- Python FastAPI backend
-- Supabase PostgreSQL + pgvector
-- GitHub Actions data jobs
-- GitHub Pages frontend and Render API
+```mermaid
+flowchart LR
+  B[Bangumi API] --> J[Python sync jobs]
+  M[MAL API] --> J
+  J --> S[(Supabase PostgreSQL)]
+  S --> A[FastAPI]
+  A --> W[React + TypeScript]
+  A --> V[(pgvector 512-D)]
+  W --> L[(Browser localStorage)]
+  G[GitHub Actions] --> J
+  P[GitHub Pages] --> W
+  R[Render] --> A
+```
 
-See [docs/architecture.md](docs/architecture.md) for the system map and [docs/design-system.md](docs/design-system.md) for the visual language.
+- Frontend: React 19, TypeScript 6, Vite 8
+- API: Python 3.12+, FastAPI, Pydantic
+- Data design: PostgreSQL, pgvector, forward-only SQL migrations
+- AI: optional quantized FastEmbed/BGE provider; deterministic CI fallback
+- Delivery: GitHub Actions, GitHub Pages, Render
 
-## Local development / 本地开发
+More detail: [architecture](docs/architecture.md), [data dictionary](docs/data-dictionary.md), [methodology](docs/methodology.md).
 
-### Web
+## Quick start / 本地运行
 
 ```powershell
 npm.cmd install
+python -m venv .venv
+.venv\Scripts\python -m pip install -e "apps/api[dev]"
+```
+
+Terminal 1:
+
+```powershell
+.venv\Scripts\python -m uvicorn anime_oscilloscope.main:app `
+  --app-dir apps/api/src --reload
+```
+
+Terminal 2:
+
+```powershell
 npm.cmd run dev
 ```
 
-Open `http://localhost:5173`.
+Open `http://localhost:5173`; API docs are at `http://localhost:8000/docs`.
 
-### API
+## Verification / 验证
 
 ```powershell
-python -m venv .venv
-.venv\Scripts\python -m pip install -e "apps/api[dev]"
-.venv\Scripts\python -m uvicorn anime_oscilloscope.main:app --app-dir apps/api/src --reload
+npm.cmd run typecheck
+npm.cmd test
+npm.cmd run build
+.venv\Scripts\python -m ruff check apps/api
+.venv\Scripts\python -m pytest apps/api/tests
+npm.cmd run test:e2e
+.venv\Scripts\python -m anime_oscilloscope.jobs.evaluate_semantic
 ```
 
-Open `http://localhost:8000/docs` or `http://localhost:8000/api/v1/health`.
+The E2E suite automatically launches the API and web app. Install Chromium once with `npx.cmd playwright install chromium`.
 
-Start both services to exercise the interactive ranking. The web app defaults to `http://127.0.0.1:8000/api/v1`; deployment can override it with `VITE_API_BASE_URL`.
-
-To enable the optional quantized BGE backend:
+## Optional BGE backend / 可选 BGE 引擎
 
 ```powershell
 .venv\Scripts\python -m pip install -e "apps/api[ai]"
 $env:APP_SEMANTIC_BACKEND="bge"
 ```
 
-## Verification / 验证
+The default CI/demo engine is `hash-512-demo`; API responses disclose the active engine and model. No model download occurs in CI.
 
-```powershell
-npm.cmd test
-npm.cmd run typecheck
-npm.cmd run build
-.venv\Scripts\python -m pytest apps/api/tests
-```
+## Data and privacy policy / 数据与隐私
 
-### Read-only Bangumi discovery / 只读季度发现
-
-```powershell
-.venv\Scripts\python -m anime_oscilloscope.jobs.discover_bangumi --year 2026 --quarter 3 --limit 5
-```
-
-The command calls the public API and prints normalized eligibility decisions. It performs no database writes.
-
-### Read-only MAL candidate matching / 只读跨站匹配
-
-Add your MAL client ID to the untracked `.env` file, then run:
-
-```powershell
-.venv\Scripts\python -m anime_oscilloscope.jobs.match_mal `
-  --bangumi-id 255209 --limit 10
-```
-
-The command prints scored candidates and performs no database writes. Never paste or commit the client ID.
-
-## Data policy / 数据政策
-
-- The Phase 6 interactive catalog and history are explicitly fictional demo data until the database read repository is enabled.
-- Tier libraries are versioned browser-local data and never sent to the API.
-- Imported viewing files and raw titles stay in the browser; password, Cookie, `SESSDATA`, and token fields are rejected.
-- Bangumi and MAL are the only enabled connector contracts in the first release.
+- Bangumi and MAL are the first connector contracts; CI uses fixed fixtures, never live APIs.
 - Douban and Filmarks remain disabled until written authorization permits reuse.
-- The site never asks for Bilibili credentials or session cookies.
-- NSFW works and the complete *My Hero Academia* animation franchise are excluded from ingestion.
+- NSFW entries and the complete *My Hero Academia* animation franchise are excluded.
+- Tier libraries and imported viewing files stay in the browser.
+- Password, Cookie, `SESSDATA`, and token fields are rejected.
+- Missing source scores are never converted to zero.
+
+See [data sources](docs/data-sources.md) and [Bilibili import decision](docs/bilibili-import.md).
+
+## Portfolio evidence / 作品集证据
+
+- [Chromium demo video](docs/assets/anime-oscilloscope-demo.webm)
+- [Codex collaboration case study](docs/codex-collaboration.md)
+- [Deployment runbook](docs/deployment.md)
+- [Demo script](docs/demo-script.md)
+- [Phase verification records](docs/verification)
+- Seven phase commits preserve requirements, implementation, tests, and corrections.
 
 ## License
 
-Source licensing will be selected before the first public release. Third-party metadata and artwork retain their respective owners' rights and will be attributed per source requirements.
+Code is released under the [MIT License](LICENSE). Third-party metadata, artwork, names, and trademarks remain the property of their respective owners.

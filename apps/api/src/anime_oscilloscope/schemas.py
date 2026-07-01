@@ -33,7 +33,7 @@ class ServiceMetaResponse(BaseModel):
     product_name: str = "番剧示波器"
     product_name_en: str = "Anime Oscilloscope"
     subtitle: str = "多源动画评分采样与分析平台"
-    phase: int = 6
+    phase: int = 7
     sources: list[SourceStatus]
     scoring: ScoringRule
 

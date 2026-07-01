@@ -147,6 +147,8 @@ describe("App", () => {
     fireEvent.click(resultButtons.at(-1)!);
 
     expect(await screen.findByRole("dialog")).toHaveTextContent("100% 数据完整度");
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("adds ranking entries to a local library and moves them into a tier", async () => {

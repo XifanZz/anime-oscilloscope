@@ -16,3 +16,5 @@ apps/web/vite.config.js
 apps/web/vite.config.d.ts
 .DS_Store
 Thumbs.db
+test-results/
+playwright-report/

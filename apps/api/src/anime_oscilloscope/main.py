@@ -1,4 +1,4 @@
-from fastapi import APIRouter, FastAPI, HTTPException, Query
+from fastapi import APIRouter, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from anime_oscilloscope import __version__
@@ -9,6 +9,7 @@ from anime_oscilloscope.demo_catalog import DEMO_CATALOG
 from anime_oscilloscope.demo_history import DEMO_HISTORY
 from anime_oscilloscope.domain import MediaType, SourceCode
 from anime_oscilloscope.history import RatingHistoryResponse
+from anime_oscilloscope.rate_limit import FixedWindowRateLimiter
 from anime_oscilloscope.schemas import (
     AnimeDetailResponse,
     CatalogIndexResponse,
@@ -31,6 +32,7 @@ semantic_service = SemanticSearchService(
     DEMO_CATALOG,
     create_embedding_provider(settings.semantic_backend, settings.semantic_model_name),
 )
+semantic_limiter = FixedWindowRateLimiter(limit=30, window_seconds=60)
 
 app = FastAPI(
     title="Anime Oscilloscope API",
@@ -46,6 +48,17 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Accept"],
 )
+
+
+@app.middleware("http")
+async def add_api_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/"):
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    return response
 
 router = APIRouter(prefix="/api/v1")
 
@@ -154,8 +167,22 @@ def anime_catalog_index() -> CatalogIndexResponse:
     response_model=SemanticSearchResponse,
     tags=["ai"],
 )
-def anime_semantic_search(request: SemanticSearchRequest) -> SemanticSearchResponse:
-    return semantic_service.search(request)
+def anime_semantic_search(
+    payload: SemanticSearchRequest,
+    request: Request,
+    response: Response,
+) -> SemanticSearchResponse:
+    client_key = request.client.host if request.client else "unknown"
+    decision = semantic_limiter.check(client_key)
+    headers = {
+        "X-RateLimit-Limit": str(semantic_limiter.limit),
+        "X-RateLimit-Remaining": str(decision.remaining),
+    }
+    if not decision.allowed:
+        headers["Retry-After"] = str(decision.retry_after)
+        raise HTTPException(status_code=429, detail="Rate limit exceeded", headers=headers)
+    response.headers.update(headers)
+    return semantic_service.search(payload)
 
 
 @router.get("/anime/{anime_id}", response_model=AnimeDetailResponse, tags=["catalog"])

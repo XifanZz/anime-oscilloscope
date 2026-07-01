@@ -1,6 +1,6 @@
 {
   "name": "anime-oscilloscope",
-  "version": "0.1.0",
+  "version": "0.7.0",
   "private": true,
   "workspaces": [
     "apps/web"
@@ -9,9 +9,13 @@
     "dev": "npm --workspace @anime-oscilloscope/web run dev",
     "build": "npm --workspace @anime-oscilloscope/web run build",
     "test": "npm --workspace @anime-oscilloscope/web run test",
+    "test:e2e": "playwright test",
     "typecheck": "npm --workspace @anime-oscilloscope/web run typecheck"
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1"
   }
 }

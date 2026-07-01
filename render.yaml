@@ -18,3 +18,5 @@ services:
         sync: false
       - key: APP_MAL_CLIENT_ID
         sync: false
+      - key: APP_SEMANTIC_BACKEND
+        value: hash
