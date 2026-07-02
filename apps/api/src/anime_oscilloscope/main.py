@@ -157,12 +157,14 @@ def anime_search(
 
 
 @router.get("/anime/index", response_model=CatalogIndexResponse, tags=["catalog"])
-def anime_catalog_index() -> CatalogIndexResponse:
+def anime_catalog_index(
+    limit: int = Query(default=500, ge=1, le=2000),
+) -> CatalogIndexResponse:
     items = catalog_repository.list_all()
     return CatalogIndexResponse(
         data_mode=catalog_repository.data_mode,
         total=len(items),
-        items=items,
+        items=items[:limit],
     )
 
 

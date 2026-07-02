@@ -11,12 +11,15 @@ CI uses committed response fixtures and never calls a live third-party API.
 - API base: `https://api.bgm.tv`
 - Contract checked against API version `2026-06-25`.
 - Discovery: `POST /v0/search/subjects` with animation type, half-open air-date range, and `nsfw: false`.
+- Historical coverage: a resumable year-by-year backfill starts at 1917, persists its page cursor in PostgreSQL, and uses idempotent upserts.
 - Detail: `GET /v0/subjects/{subject_id}`.
 - Episodes: paginated `GET /v0/episodes?subject_id=...`.
 - The required identifying User-Agent contains the maintainer name and public project URL.
 - An access token is optional for current public reads and is loaded only from `APP_BANGUMI_TOKEN`.
 
 The search endpoint is documented as experimental. Raw payload caching and fixture tests prevent silent schema drift from contaminating normalized records.
+
+The public ranking API remains paginated. The web client initially requests 50 rows and exposes explicit incremental loading instead of imposing a 20-title product limit.
 
 ## Eligibility decisions
 

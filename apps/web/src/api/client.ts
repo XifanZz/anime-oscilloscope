@@ -110,7 +110,11 @@ export type RankingFilters = {
   malMin: string;
 };
 
-export function getRankings(filters: RankingFilters): Promise<RankingResponse> {
+export function getRankings(
+  filters: RankingFilters,
+  page = 1,
+  pageSize = 50,
+): Promise<RankingResponse> {
   const params = new URLSearchParams();
   if (filters.year) params.set("year", filters.year);
   if (filters.quarter) params.set("quarter", filters.quarter);
@@ -121,11 +125,13 @@ export function getRankings(filters: RankingFilters): Promise<RankingResponse> {
     params.set("bangumi_min", filters.bangumiMin || "1000");
     params.set("mal_min", filters.malMin || "20000");
   }
+  params.set("page", String(page));
+  params.set("page_size", String(pageSize));
   return request<RankingResponse>(`/rankings?${params.toString()}`);
 }
 
 export function searchAnime(query: string): Promise<SearchResponse> {
-  return request<SearchResponse>(`/anime/search?q=${encodeURIComponent(query)}`);
+  return request<SearchResponse>(`/anime/search?q=${encodeURIComponent(query)}&limit=50`);
 }
 
 export function getAnime(animeId: string): Promise<DetailResponse> {
@@ -157,7 +163,7 @@ export function semanticSearch(query: string): Promise<SemanticResponse> {
 }
 
 export function getCatalogIndex(): Promise<{ data_mode: "demo" | "live"; total: number; items: Anime[] }> {
-  return request("/anime/index");
+  return request("/anime/index?limit=500");
 }
 
 export function getRatingHistory(animeId: string): Promise<HistoryResponse> {

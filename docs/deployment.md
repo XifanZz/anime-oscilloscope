@@ -7,8 +7,8 @@
 ## Vercel API
 
 1. Import `XifanZz/anime-oscilloscope` into a personal Vercel Hobby account.
-2. Set the project Root Directory to `apps/api`; Vercel reads the FastAPI entrypoint from `pyproject.toml`.
-3. Add `APP_DATABASE_URL`, `APP_MAL_CLIENT_ID`, `APP_ENV=production`, `APP_REPOSITORY_BACKEND=postgres`, `APP_SEMANTIC_BACKEND=hash`, and `APP_CORS_ORIGINS=https://xifanzz.github.io`.
+2. Set the project Root Directory to `apps/api` and Framework Preset to **FastAPI**; Vercel reads the conventional `app.py` entrypoint.
+3. Add `APP_DATABASE_URL`, `APP_MAL_CLIENT_ID`, `APP_ENV=production`, `APP_REPOSITORY_BACKEND=postgres`, `APP_SEMANTIC_BACKEND=hash`, and `APP_CORS_ORIGINS=["https://xifanzz.github.io"]`.
 4. Deploy with project name `anime-oscilloscope-api`.
 5. Verify that `/api/v1/health` reports `data_mode: live`, then check `/docs` and the semantic-search rate-limit headers.
 
@@ -32,10 +32,13 @@ Apply SQL files in lexical order:
 2. `002_source_payload_cache.sql`
 3. `003_mapping_candidates.sql`
 4. `004_live_repository.sql`
+5. `005_catalog_backfill.sql`
 
 ## Scheduled synchronization
 
 The `Live data sync` workflow is inert by default. Add repository secrets `APP_DATABASE_URL`, `APP_BANGUMI_TOKEN`, and `APP_MAL_CLIENT_ID`, then set repository variable `LIVE_SYNC_ENABLED=true`. It runs at 03:17 China Standard Time, rotates through seven seasonal discovery pages across the week, and can also be started manually with an explicit offset. Each execution records `sync_run`, applies the configured sampling cadence, keeps failed-source snapshots intact, and writes ambiguous MAL matches to `mapping_candidate`.
+
+The `Historical catalog backfill` workflow is separately guarded by `HISTORY_BACKFILL_ENABLED=true`. It applies migration `005` idempotently, resumes a durable PostgreSQL cursor, and processes bounded Bangumi pages from 1917 through the current year. Re-running the workflow is safe: catalog and rating writes are upserts, and a crash repeats at most the last page. The scheduled run processes ten pages every six hours; manual dispatch can raise or lower that bound without losing progress.
 
 Use a dedicated service role only in backend jobs. Never expose database or source credentials through Vite variables.
 

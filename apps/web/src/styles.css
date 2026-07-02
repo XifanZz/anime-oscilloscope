@@ -142,6 +142,9 @@ main { max-width: 1480px; margin: 0 auto; padding: 0 48px; }
 .completeness.partial { color: var(--amber); }
 .missing-source { color: #687f85 !important; }
 .empty-state, .error-state { padding: 38px; text-align: center; color: var(--muted); font-size: 13px; }
+.load-more-rankings { width: 100%; padding: 16px; border: 0; border-top: 1px solid var(--line); background: rgba(115,183,255,.08); color: var(--blue); font: inherit; font-weight: 700; cursor: pointer; }
+.load-more-rankings:hover { background: rgba(115,183,255,.14); }
+.load-more-rankings:disabled { cursor: wait; opacity: .65; }
 .error-state { margin-bottom: 14px; border: 1px solid rgba(255,122,157,.24); border-radius: 12px; color: #ff9bb4; background: rgba(255,122,157,.06); }
 
 .oscilloscope-section { padding: 30px 0 100px; scroll-margin-top: 30px; }

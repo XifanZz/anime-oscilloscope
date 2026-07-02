@@ -125,6 +125,7 @@ function App() {
   const [filters, setFilters] = useState(initialFilters);
   const [rankings, setRankings] = useState<RankingResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Anime[] | null>(null);
@@ -188,6 +189,20 @@ function App() {
     }
   };
 
+  const loadMoreRankings = async () => {
+    if (!rankings || loadingMore || rankings.items.length >= rankings.total) return;
+    setLoadingMore(true);
+    setError("");
+    try {
+      const next = await getRankings(filters, rankings.page + 1, rankings.page_size);
+      setRankings({ ...next, items: [...rankings.items, ...next.items] });
+    } catch (reason) {
+      setError((reason as Error).message);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   const openDetail = async (animeId: string) => {
     setError("");
     try {
@@ -232,6 +247,7 @@ function App() {
               <div className="ranking-row heading-row" role="row"><span>排名</span><span>动画信号</span><span>来源采样</span><span>综合分</span><span>完整度</span></div>
               {rankings?.items.map((item) => <div className="ranking-row" key={item.anime.id} role="row"><strong className="rank">{String(item.rank).padStart(2, "0")}</strong><button className="anime-title anime-button" type="button" onClick={() => openDetail(item.anime.id)}><span className="poster-placeholder">{item.anime.name_cn?.slice(0, 1) ?? "A"}</span><span><strong>{item.anime.name_cn ?? item.anime.canonical_name}</strong><small>{item.anime.canonical_name} · {item.anime.media_type.toUpperCase()}</small></span></button><SourceRatings anime={item.anime} /><strong className="score">{item.composite_score.toFixed(2)}<small>/ 10</small></strong><span className={`completeness ${item.completeness < 100 ? "partial" : ""}`}>{item.completeness}%<small>{item.missing_sources.length ? `缺 ${item.missing_sources.map((source) => sourceLabels[source]).join("、")}` : "双源完整"}</small></span></div>)}
               {!rankings?.items.length && <div className="empty-state">当前筛选下没有信号，换个条件试试。</div>}
+              {rankings && rankings.items.length < rankings.total && <button className="load-more-rankings" type="button" disabled={loadingMore} onClick={loadMoreRankings}>{loadingMore ? "正在加载…" : `加载更多（已显示 ${rankings.items.length} / ${rankings.total}）`}</button>}
             </div>
           )}
         </section>

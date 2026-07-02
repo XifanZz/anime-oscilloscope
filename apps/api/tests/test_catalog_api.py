@@ -54,6 +54,7 @@ def test_search_matches_chinese_title_aliases_and_tags() -> None:
 
 def test_catalog_index_can_be_downloaded_without_uploading_private_titles() -> None:
     response = client.get("/api/v1/anime/index")
+    limited = client.get("/api/v1/anime/index?limit=2")
 
     assert response.status_code == 200
     payload = response.json()
@@ -65,6 +66,8 @@ def test_catalog_index_can_be_downloaded_without_uploading_private_titles() -> N
         "demo-lantern",
         "demo-paper-moon",
     }
+    assert limited.json()["total"] == 4
+    assert len(limited.json()["items"]) == 2
 
 
 def test_detail_explains_source_completeness_and_returns_404() -> None:

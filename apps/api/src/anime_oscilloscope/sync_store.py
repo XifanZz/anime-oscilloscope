@@ -198,6 +198,67 @@ class PostgresSyncStore:
             ).fetchall()
         return due_external_ids(rows, launch_date=launch_date, now=now)
 
+    def initialize_backfill(
+        self,
+        *,
+        start_year: int,
+        end_year: int,
+        reset: bool = False,
+    ) -> dict[str, Any]:
+        with self._connection() as connection:
+            if reset:
+                connection.execute(
+                    "delete from catalog_backfill_state where source = 'bangumi'"
+                )
+            connection.execute(
+                """insert into catalog_backfill_state
+                     (source, start_year, end_year, next_year, next_offset)
+                   values ('bangumi', %s, %s, %s, 0)
+                   on conflict (source) do update set
+                     end_year = greatest(catalog_backfill_state.end_year, excluded.end_year),
+                     completed = case
+                       when catalog_backfill_state.next_year <= excluded.end_year then false
+                       else catalog_backfill_state.completed
+                     end,
+                     updated_at = now()""",
+                (start_year, end_year, start_year),
+            )
+            row = connection.execute(
+                "select * from catalog_backfill_state where source = 'bangumi'"
+            ).fetchone()
+        if row is None:
+            raise RuntimeError("catalog backfill state was not initialized")
+        return dict(row)
+
+    def advance_backfill(
+        self,
+        *,
+        next_year: int,
+        next_offset: int,
+        discovered: int,
+        completed: bool,
+        error: str | None = None,
+    ) -> None:
+        with self._connection() as connection:
+            connection.execute(
+                """update catalog_backfill_state set
+                     next_year = %s, next_offset = %s,
+                     processed_pages = processed_pages + 1,
+                     discovered_count = discovered_count + %s,
+                     completed = %s, last_error = %s, updated_at = now()
+                   where source = 'bangumi'""",
+                (next_year, next_offset, discovered, completed, error),
+            )
+
+    def fail_backfill(self, error: str) -> None:
+        with self._connection() as connection:
+            connection.execute(
+                """update catalog_backfill_state
+                   set last_error = %s, updated_at = now()
+                   where source = 'bangumi'""",
+                (error[:2000],),
+            )
+
     def mark_connector(self, source: SourceCode, *, error: str | None = None) -> None:
         with self._connection() as connection:
             if error:
