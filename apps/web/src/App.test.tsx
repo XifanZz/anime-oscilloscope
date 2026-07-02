@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, vi } from "vitest";
-import App, { currentSeason, shouldFallbackToAllTime } from "./App";
+import App, { currentSeason, rankingYears, shouldFallbackToAllTime } from "./App";
 
 const anime = {
   id: "demo-aurora",
@@ -88,6 +88,13 @@ describe("App", () => {
       year: "2026",
       quarter: "3",
     });
+  });
+
+  it("offers every historical ranking year from the present back to 1917", () => {
+    const years = rankingYears(new Date("2026-07-02T00:00:00Z"));
+    expect(years[0]).toBe("2026");
+    expect(years.at(-1)).toBe("1917");
+    expect(years).toHaveLength(110);
   });
 
   it("falls back to all-time only when the automatic current season is empty", () => {
