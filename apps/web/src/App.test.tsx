@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, vi } from "vitest";
-import App from "./App";
+import App, { currentSeason, shouldFallbackToAllTime } from "./App";
 
 const anime = {
   id: "demo-aurora",
@@ -83,6 +83,37 @@ afterEach(() => {
 });
 
 describe("App", () => {
+  it("derives the default ranking season from the current date", () => {
+    expect(currentSeason(new Date("2026-07-02T00:00:00Z"))).toEqual({
+      year: "2026",
+      quarter: "3",
+    });
+  });
+
+  it("falls back to all-time only when the automatic current season is empty", () => {
+    const filters = {
+      year: "2026",
+      quarter: "3",
+      region: "",
+      mediaType: "",
+      mode: "unrestricted" as const,
+      bangumiMin: "1000",
+      malMin: "20000",
+    };
+    const emptyResponse = { ...rankingPayload, data_mode: "demo" as const, total: 0, items: [] };
+
+    expect(shouldFallbackToAllTime(
+      emptyResponse,
+      filters,
+      new Date("2026-07-02T00:00:00Z"),
+    )).toBe(true);
+    expect(shouldFallbackToAllTime(
+      emptyResponse,
+      { ...filters, region: "KR" },
+      new Date("2026-07-02T00:00:00Z"),
+    )).toBe(false);
+  });
+
   it("loads API rankings and clearly labels demo data", async () => {
     render(<App />);
 
