@@ -14,15 +14,35 @@ import {
 import { TierList } from "./tier-list/TierList";
 import { AiSearch } from "./ai-search/AiSearch";
 
+export function currentSeason(now = new Date()): Pick<RankingFilters, "year" | "quarter"> {
+  return {
+    year: String(now.getUTCFullYear()),
+    quarter: String(Math.floor(now.getUTCMonth() / 3) + 1),
+  };
+}
+
 const initialFilters: RankingFilters = {
-  year: "2026",
-  quarter: "2",
+  ...currentSeason(),
   region: "",
   mediaType: "",
   mode: "unrestricted",
   bangumiMin: "1000",
   malMin: "20000",
 };
+
+export function shouldFallbackToAllTime(
+  response: RankingResponse,
+  filters: RankingFilters,
+  now = new Date(),
+) {
+  const season = currentSeason(now);
+  return response.items.length === 0
+    && filters.year === season.year
+    && filters.quarter === season.quarter
+    && !filters.region
+    && !filters.mediaType
+    && filters.mode === "unrestricted";
+}
 
 const sourceLabels = { bangumi: "Bangumi", mal: "MAL", douban: "豆瓣", filmarks: "Filmarks" };
 
@@ -118,7 +138,14 @@ function App() {
     setLoading(true);
     setError("");
     getRankings(filters)
-      .then((data) => active && setRankings(data))
+      .then((data) => {
+        if (!active) return;
+        if (shouldFallbackToAllTime(data, filters)) {
+          setFilters((current) => ({ ...current, year: "", quarter: "" }));
+          return;
+        }
+        setRankings(data);
+      })
       .catch((reason: Error) => active && setError(reason.message))
       .finally(() => active && setLoading(false));
     return () => { active = false; };
