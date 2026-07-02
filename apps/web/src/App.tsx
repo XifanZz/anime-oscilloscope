@@ -22,13 +22,21 @@ export function currentSeason(now = new Date()): Pick<RankingFilters, "year" | "
 }
 
 const initialFilters: RankingFilters = {
-  ...currentSeason(),
+  year: "",
+  quarter: "",
   region: "",
   mediaType: "",
   mode: "unrestricted",
   bangumiMin: "1000",
   malMin: "20000",
 };
+
+export function rankingYears(now = new Date()) {
+  return Array.from(
+    { length: now.getUTCFullYear() - 1917 + 1 },
+    (_, index) => String(now.getUTCFullYear() - index),
+  );
+}
 
 export function shouldFallbackToAllTime(
   response: RankingResponse,
@@ -224,16 +232,16 @@ function App() {
       <main id="main-content">
         {rankings?.data_mode === "demo" && <div className="demo-banner" role="status"><strong>演示数据模式</strong><span>当前条目均为虚构测试数据，用于验证产品交互；接入 Supabase 后才会切换为真实目录。</span></div>}
         <section className="hero">
-          <div className="hero-copy"><p className="eyebrow">MULTI-SOURCE ANIME ANALYTICS</p><h1><span className="headline-line">听见评分的噪声，</span><span className="headline-line signal-text">看见番剧的信号。</span></h1><p className="hero-description">采样 Bangumi 与 MyAnimeList 社区评分，用透明的权重、门槛和数据完整度，观察一部动画如何被看见、讨论与重新评价。</p><div className="hero-actions"><a className="button primary" href="#rankings">查看当季榜单</a><a className="button ghost" href="#methodology">评分方法</a></div></div>
+          <div className="hero-copy"><p className="eyebrow">MULTI-SOURCE ANIME ANALYTICS</p><h1><span className="headline-line">听见评分的噪声，</span><span className="headline-line signal-text">看见番剧的信号。</span></h1><p className="hero-description">采样 Bangumi 与 MyAnimeList 社区评分，用透明的权重、门槛和数据完整度，观察一部动画如何被看见、讨论与重新评价。</p><div className="hero-actions"><a className="button primary" href="#rankings">查看全历史榜单</a><a className="button ghost" href="#methodology">评分方法</a></div></div>
           <SignalChart />
         </section>
 
         <section className="metrics" aria-label="项目状态"><article><span>语义向量维度</span><strong>512<small>BGE / 演示回退同维</small></strong></article><article><span>历史采样点</span><strong>{history?.history.composite.length ?? "—"}<small>双源与综合分序列</small></strong></article><article><span>质量门禁</span><strong>88<small>66 API + 18 Web + 4 E2E</small></strong></article><article><span>当前版本</span><strong>0.7<small>作品集演示发布</small></strong></article></section>
 
         <section className="ranking-section" id="rankings">
-          <div className="section-heading"><div><p className="eyebrow">CURRENT SEASON / API DRIVEN</p><h2>综合信号排行榜</h2><p>综合分不会将缺失来源记为零分；数据完整度会与结果同时展示。</p></div></div>
+          <div className="section-heading"><div><p className="eyebrow">ALL TIME / API DRIVEN</p><h2>全历史综合信号排行榜</h2><p>默认展示全时期，并支持按年份、季度、地区与类型筛选；综合分不会将缺失来源记为零分。</p></div></div>
           <div className="filter-bar" aria-label="榜单筛选">
-            <label>年份<select aria-label="年份" value={filters.year} onChange={(e) => updateFilter("year", e.target.value)}><option value="">全时期</option><option value="2026">2026</option><option value="2025">2025</option></select></label>
+            <label>年份<select aria-label="年份" value={filters.year} onChange={(e) => updateFilter("year", e.target.value)}><option value="">全时期</option>{rankingYears().map((year) => <option key={year} value={year}>{year}</option>)}</select></label>
             <label>季度<select aria-label="季度" value={filters.quarter} onChange={(e) => updateFilter("quarter", e.target.value)}><option value="">全部季度</option><option value="1">冬</option><option value="2">春</option><option value="3">夏</option><option value="4">秋</option></select></label>
             <label>地区<select aria-label="地区" value={filters.region} onChange={(e) => updateFilter("region", e.target.value)}><option value="">全部地区</option><option value="CN">中国</option><option value="JP">日本</option><option value="KR">韩国</option></select></label>
             <label>类型<select aria-label="类型" value={filters.mediaType} onChange={(e) => updateFilter("mediaType", e.target.value)}><option value="">全部类型</option><option value="tv">TV</option><option value="web">WEB</option><option value="movie">电影</option><option value="ova">OVA</option></select></label>
