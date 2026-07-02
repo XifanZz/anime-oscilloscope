@@ -12,6 +12,10 @@ it("falls back to an explicit static demo when the hosted API is unavailable", a
 
   expect(rankings.data_mode).toBe("demo");
   expect(rankings.items[0].anime.name_cn).toBe("极光频率");
+  expect(fetch).toHaveBeenCalledWith(
+    expect.stringContaining("page_size=50"),
+    expect.any(Object),
+  );
   expect(catalog.total).toBe(4);
   expect(semantic.results[0].anime.name_cn).toBe("潮汐档案");
   expect(semantic.engine).toBe("hash-512-static-demo");
