@@ -1,12 +1,14 @@
 import { FormEvent, useEffect, useState } from "react";
 import {
   Anime,
+  DataQualityResponse,
   DetailResponse,
   HistoryResponse,
   RankingFilters,
   RankingResponse,
   getAnime,
   getCatalogIndex,
+  getDataQuality,
   getRankings,
   getRatingHistory,
   searchAnime,
@@ -53,6 +55,104 @@ export function shouldFallbackToAllTime(
 }
 
 const sourceLabels = { bangumi: "Bangumi", mal: "MAL", douban: "豆瓣", filmarks: "Filmarks" };
+
+const qualityStatusLabels = {
+  fresh: "正常",
+  stale: "部分过期",
+  unavailable: "未启用",
+};
+
+function formatNumber(value: number) {
+  return value.toLocaleString("zh-CN");
+}
+
+function formatDateTime(value: string | null) {
+  if (!value) return "暂无记录";
+  return new Date(value).toLocaleString("zh-CN", { hour12: false });
+}
+
+function DataQualityPanel({ quality }: { quality: DataQualityResponse | null }) {
+  if (!quality) {
+    return <section className="data-quality-section" aria-label="数据质量与同步状态"><div className="empty-state">正在读取数据状态…</div></section>;
+  }
+  const malCoverage = quality.eligible_anime
+    ? Math.round((100 * quality.with_mal_rating) / quality.eligible_anime)
+    : 0;
+  return (
+    <section className="data-quality-section" id="data-quality" aria-label="数据质量与同步状态">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">DATA QUALITY / SYNC RADAR</p>
+          <h2>数据质量与同步状态</h2>
+          <p>把采集进度、来源覆盖率和缺失原因直接摊开，榜单可信度就不靠“玄学滤镜”。</p>
+        </div>
+        <time>生成时间：{formatDateTime(quality.generated_at)}</time>
+      </div>
+      <div className="quality-grid">
+        <article className="quality-card primary">
+          <span>可收录动画</span>
+          <strong>{formatNumber(quality.eligible_anime)}</strong>
+          <small>总目录 {formatNumber(quality.total_anime)} · 可排行 {formatNumber(quality.rankable_anime)}</small>
+        </article>
+        <article className="quality-card">
+          <span>Bangumi 评分覆盖</span>
+          <strong>{formatNumber(quality.with_bangumi_rating)}</strong>
+          <small>最近采样：{formatDateTime(quality.latest_rating_sampled_at)}</small>
+        </article>
+        <article className="quality-card">
+          <span>MAL 评分覆盖</span>
+          <strong>{malCoverage}%</strong>
+          <small>{formatNumber(quality.with_mal_rating)} 已评分 · {formatNumber(quality.missing_mal)} 待匹配</small>
+        </article>
+        <article className="quality-card">
+          <span>双源完整条目</span>
+          <strong>{formatNumber(quality.with_both_core_sources)}</strong>
+          <small>NSFW 排除 {formatNumber(quality.nsfw_anime)} · 规则排除 {formatNumber(quality.excluded_anime)}</small>
+        </article>
+      </div>
+      {quality.backfill && (
+        <div className="backfill-card">
+          <div>
+            <span>Bangumi 全历史回填</span>
+            <strong>{quality.backfill.completed ? "已完成" : `进行到 ${quality.backfill.next_year} 年`}</strong>
+            <small>
+              {quality.backfill.start_year}–{quality.backfill.end_year} · 已处理 {formatNumber(quality.backfill.processed_pages)} 页 · 发现 {formatNumber(quality.backfill.discovered_count)} 条
+            </small>
+          </div>
+          <div className="progress-meter" aria-label={`历史回填进度 ${quality.backfill.progress_percent}%`}>
+            <span style={{ width: `${quality.backfill.progress_percent}%` }} />
+          </div>
+          {quality.backfill.last_error && <p className="quality-warning">{quality.backfill.last_error}</p>}
+        </div>
+      )}
+      <div className="connector-grid">
+        {quality.connectors.map((connector) => (
+          <article className={`connector-card ${connector.status}`} key={connector.source}>
+            <span>{connector.label}</span>
+            <strong>{qualityStatusLabels[connector.status]}</strong>
+            <small>
+              映射 {formatNumber(connector.mapped_count)} · 评分 {formatNumber(connector.rated_count)}
+            </small>
+            <time>成功：{formatDateTime(connector.last_success_at)}</time>
+            {connector.message && <p>{connector.message}</p>}
+          </article>
+        ))}
+      </div>
+      {!!quality.recent_runs.length && (
+        <div className="sync-run-strip">
+          {quality.recent_runs.slice(0, 3).map((run) => (
+            <span key={`${run.source}-${run.job_type}-${run.started_at}`}>
+              {sourceLabels[run.source]} / {run.job_type}：{run.status} · +{run.succeeded_count} / !{run.failed_count}
+            </span>
+          ))}
+        </div>
+      )}
+      <ul className="quality-notes">
+        {quality.notes.map((note) => <li key={note}>{note}</li>)}
+      </ul>
+    </section>
+  );
+}
 
 function OscilloscopeMark() {
   return (
@@ -141,6 +241,7 @@ function App() {
   const [history, setHistory] = useState<HistoryResponse | null>(null);
   const [historyError, setHistoryError] = useState("");
   const [catalogIndex, setCatalogIndex] = useState<Anime[]>([]);
+  const [dataQuality, setDataQuality] = useState<DataQualityResponse | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -170,6 +271,10 @@ function App() {
 
   useEffect(() => {
     getCatalogIndex().then((response) => setCatalogIndex(response.items)).catch(() => setCatalogIndex([]));
+  }, []);
+
+  useEffect(() => {
+    getDataQuality().then((response) => setDataQuality(response)).catch(() => setDataQuality(null));
   }, []);
 
   useEffect(() => {
@@ -237,6 +342,8 @@ function App() {
         </section>
 
         <section className="metrics" aria-label="项目状态"><article><span>语义向量维度</span><strong>512<small>BGE / 演示回退同维</small></strong></article><article><span>历史采样点</span><strong>{history?.history.composite.length ?? "—"}<small>双源与综合分序列</small></strong></article><article><span>质量门禁</span><strong>88<small>66 API + 18 Web + 4 E2E</small></strong></article><article><span>当前版本</span><strong>0.7<small>作品集演示发布</small></strong></article></section>
+
+        <DataQualityPanel quality={dataQuality} />
 
         <section className="ranking-section" id="rankings">
           <div className="section-heading"><div><p className="eyebrow">ALL TIME / API DRIVEN</p><h2>全历史综合信号排行榜</h2><p>默认展示全时期，并支持按年份、季度、地区与类型筛选；综合分不会将缺失来源记为零分。</p></div></div>

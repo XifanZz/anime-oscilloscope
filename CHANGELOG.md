@@ -9,6 +9,7 @@
 - Replace the card-gated Render target with Vercel Hobby FastAPI deployment metadata.
 - Add resumable full-history Bangumi catalog backfill with a durable database cursor.
 - Replace the 20-row web limit with 50-row pages and explicit incremental loading.
+- Add a data-quality dashboard for catalog coverage, MAL gaps, connector freshness, and backfill progress.
 
 ## 0.7.0 - 2026-07-01
 

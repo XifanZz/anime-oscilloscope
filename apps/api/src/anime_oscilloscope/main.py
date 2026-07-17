@@ -8,10 +8,12 @@ from anime_oscilloscope.connectors import BangumiConnector, MALConnector
 from anime_oscilloscope.database import create_repositories
 from anime_oscilloscope.domain import MediaType, SourceCode
 from anime_oscilloscope.history import RatingHistoryResponse
+from anime_oscilloscope.quality import create_quality_repository
 from anime_oscilloscope.rate_limit import FixedWindowRateLimiter
 from anime_oscilloscope.schemas import (
     AnimeDetailResponse,
     CatalogIndexResponse,
+    DataQualityResponse,
     HealthResponse,
     ScoringRule,
     SearchResponse,
@@ -28,6 +30,7 @@ from anime_oscilloscope.semantic import (
 
 settings = get_settings()
 catalog_repository, history_repository = create_repositories(settings)
+quality_repository = create_quality_repository(settings, catalog_repository)
 semantic_service = SemanticSearchService(
     catalog_repository,
     create_embedding_provider(settings.semantic_backend, settings.semantic_model_name),
@@ -118,6 +121,11 @@ def service_meta() -> ServiceMetaResponse:
             },
         ),
     )
+
+
+@router.get("/data/quality", response_model=DataQualityResponse, tags=["system"])
+def data_quality() -> DataQualityResponse:
+    return quality_repository.get()
 
 
 @router.get("/rankings", response_model=RankingPage, tags=["catalog"])

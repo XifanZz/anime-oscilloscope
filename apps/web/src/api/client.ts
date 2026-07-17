@@ -58,6 +58,57 @@ export type DetailResponse = {
   missing_sources: SourceCode[];
 };
 
+export type DataQualityResponse = {
+  data_mode: "demo" | "live";
+  generated_at: string;
+  total_anime: number;
+  eligible_anime: number;
+  rankable_anime: number;
+  excluded_anime: number;
+  nsfw_anime: number;
+  with_bangumi_rating: number;
+  with_mal_rating: number;
+  with_both_core_sources: number;
+  missing_mal: number;
+  latest_rating_sampled_at: string | null;
+  latest_catalog_updated_at: string | null;
+  connectors: {
+    source: SourceCode;
+    label: string;
+    enabled: boolean;
+    status: "fresh" | "stale" | "unavailable";
+    mapped_count: number;
+    rated_count: number;
+    latest_sampled_at: string | null;
+    last_success_at: string | null;
+    last_attempt_at: string | null;
+    message: string | null;
+  }[];
+  backfill: {
+    source: SourceCode;
+    start_year: number;
+    end_year: number;
+    next_year: number;
+    next_offset: number;
+    processed_pages: number;
+    discovered_count: number;
+    completed: boolean;
+    progress_percent: number;
+    last_error: string | null;
+    updated_at: string;
+  } | null;
+  recent_runs: {
+    source: SourceCode;
+    job_type: string;
+    status: string;
+    succeeded_count: number;
+    failed_count: number;
+    started_at: string;
+    finished_at: string | null;
+  }[];
+  notes: string[];
+};
+
 export type HistoryPoint = {
   sampled_at: string;
   score: number;
@@ -136,6 +187,10 @@ export function searchAnime(query: string): Promise<SearchResponse> {
 
 export function getAnime(animeId: string): Promise<DetailResponse> {
   return request<DetailResponse>(`/anime/${encodeURIComponent(animeId)}`);
+}
+
+export function getDataQuality(): Promise<DataQualityResponse> {
+  return request<DataQualityResponse>("/data/quality");
 }
 
 export type SemanticResponse = {

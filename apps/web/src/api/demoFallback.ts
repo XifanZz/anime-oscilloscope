@@ -87,6 +87,36 @@ function detail(anime: Anime): DetailResponse {
 
 const historyDates = ["2026-04-05", "2026-04-19", "2026-05-03", "2026-05-17", "2026-06-07", "2026-06-30"];
 
+function dataQuality() {
+  return {
+    data_mode: "demo",
+    generated_at: sampledAt,
+    total_anime: demoCatalog.length,
+    eligible_anime: demoCatalog.length,
+    rankable_anime: demoCatalog.length,
+    excluded_anime: 0,
+    nsfw_anime: 0,
+    with_bangumi_rating: demoCatalog.filter((anime) => anime.ratings.some((rating) => rating.source === "bangumi")).length,
+    with_mal_rating: demoCatalog.filter((anime) => anime.ratings.some((rating) => rating.source === "mal")).length,
+    with_both_core_sources: demoCatalog.filter((anime) => anime.ratings.some((rating) => rating.source === "bangumi") && anime.ratings.some((rating) => rating.source === "mal")).length,
+    missing_mal: demoCatalog.filter((anime) => !anime.ratings.some((rating) => rating.source === "mal")).length,
+    latest_rating_sampled_at: sampledAt,
+    latest_catalog_updated_at: sampledAt,
+    connectors: [
+      { source: "bangumi", label: "Bangumi", enabled: true, status: "fresh", mapped_count: 4, rated_count: 4, latest_sampled_at: sampledAt, last_success_at: sampledAt, last_attempt_at: sampledAt, message: null },
+      { source: "mal", label: "MyAnimeList", enabled: true, status: "fresh", mapped_count: 3, rated_count: 3, latest_sampled_at: sampledAt, last_success_at: sampledAt, last_attempt_at: sampledAt, message: null },
+      { source: "douban", label: "豆瓣", enabled: false, status: "unavailable", mapped_count: 0, rated_count: 0, latest_sampled_at: null, last_success_at: null, last_attempt_at: null, message: "Requires written authorization" },
+      { source: "filmarks", label: "Filmarks", enabled: false, status: "unavailable", mapped_count: 0, rated_count: 0, latest_sampled_at: null, last_success_at: null, last_attempt_at: null, message: "Requires written authorization" },
+    ],
+    backfill: null,
+    recent_runs: [],
+    notes: [
+      "当前为演示数据模式；真实数据模式会展示 Supabase 采集进度。",
+      "MAL 缺失不会被当作 0 分，而是显示为数据完整度差异。",
+    ],
+  };
+}
+
 function history(): HistoryResponse {
   const makePoints = (scores: number[], start: number, end: number) => scores.map((score, index) => ({
     sampled_at: `${historyDates[index]}T08:00:00Z`, score,
@@ -134,6 +164,7 @@ function semantic(query: string): SemanticResponse {
 
 export async function demoFallback(path: string, init?: RequestInit): Promise<unknown> {
   const url = new URL(path, "https://demo.invalid");
+  if (url.pathname === "/data/quality") return dataQuality();
   if (url.pathname === "/rankings") return ranking(url);
   if (url.pathname === "/anime/index") return { data_mode: "demo", total: demoCatalog.length, items: demoCatalog };
   if (url.pathname === "/anime/search") {
