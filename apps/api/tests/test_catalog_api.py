@@ -70,6 +70,22 @@ def test_catalog_index_can_be_downloaded_without_uploading_private_titles() -> N
     assert len(limited.json()["items"]) == 2
 
 
+def test_data_quality_summarizes_demo_catalog_and_source_gaps() -> None:
+    response = client.get("/api/v1/data/quality")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["data_mode"] == "demo"
+    assert payload["total_anime"] == 4
+    assert payload["eligible_anime"] == 4
+    assert payload["rankable_anime"] == 4
+    assert payload["with_bangumi_rating"] == 4
+    assert payload["with_mal_rating"] == 3
+    assert payload["missing_mal"] == 1
+    assert payload["connectors"][0]["source"] == "bangumi"
+    assert payload["connectors"][0]["status"] == "fresh"
+
+
 def test_detail_explains_source_completeness_and_returns_404() -> None:
     detail = client.get("/api/v1/anime/demo-lantern")
     missing = client.get("/api/v1/anime/unknown")

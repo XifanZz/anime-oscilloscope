@@ -61,6 +61,29 @@ const semanticPayload = {
   elapsed_ms: 1.2,
 };
 
+const dataQualityPayload = {
+  data_mode: "demo",
+  generated_at: "2026-06-30T08:00:00Z",
+  total_anime: 4,
+  eligible_anime: 4,
+  rankable_anime: 4,
+  excluded_anime: 0,
+  nsfw_anime: 0,
+  with_bangumi_rating: 4,
+  with_mal_rating: 3,
+  with_both_core_sources: 3,
+  missing_mal: 1,
+  latest_rating_sampled_at: "2026-06-30T08:00:00Z",
+  latest_catalog_updated_at: "2026-06-30T08:00:00Z",
+  connectors: [
+    { source: "bangumi", label: "Bangumi", enabled: true, status: "fresh", mapped_count: 4, rated_count: 4, latest_sampled_at: "2026-06-30T08:00:00Z", last_success_at: "2026-06-30T08:00:00Z", last_attempt_at: "2026-06-30T08:00:00Z", message: null },
+    { source: "mal", label: "MyAnimeList", enabled: true, status: "fresh", mapped_count: 3, rated_count: 3, latest_sampled_at: "2026-06-30T08:00:00Z", last_success_at: "2026-06-30T08:00:00Z", last_attempt_at: "2026-06-30T08:00:00Z", message: null },
+  ],
+  backfill: { source: "bangumi", start_year: 1917, end_year: 2026, next_year: 1937, next_offset: 0, processed_pages: 20, discovered_count: 143, completed: false, progress_percent: 18, last_error: null, updated_at: "2026-06-30T08:00:00Z" },
+  recent_runs: [],
+  notes: ["MAL 缺失不会被当作 0 分。"],
+};
+
 function jsonResponse(payload: unknown) {
   return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(payload) });
 }
@@ -70,6 +93,7 @@ beforeEach(() => {
     const url = String(input);
     if (url.includes("/anime/search")) return jsonResponse({ data_mode: "demo", query: "极光", total: 1, items: [anime] });
     if (url.includes("/anime/semantic-search")) return jsonResponse(semanticPayload);
+    if (url.includes("/data/quality")) return jsonResponse(dataQualityPayload);
     if (url.includes("/anime/index")) return jsonResponse({ data_mode: "demo", total: 1, items: [anime] });
     if (url.includes("/ratings/history")) return jsonResponse(historyPayload);
     if (url.includes("/anime/demo-aurora")) return jsonResponse({ data_mode: "demo", anime, composite_score: 8.72, completeness: 100, missing_sources: [] });
@@ -127,6 +151,14 @@ describe("App", () => {
     expect((await screen.findAllByText("极光频率")).length).toBeGreaterThan(1);
     expect(screen.getByRole("status")).toHaveTextContent("演示数据模式");
     expect(screen.getByText("8.72")).toBeInTheDocument();
+  });
+
+  it("shows data quality coverage and historical backfill progress", async () => {
+    render(<App />);
+
+    expect(await screen.findByText("数据质量与同步状态")).toBeInTheDocument();
+    expect(screen.getByText("MAL 评分覆盖")).toBeInTheDocument();
+    expect(screen.getByText("进行到 1937 年")).toBeInTheDocument();
   });
 
   it("renders dual-source history, composite signal, episodes, and stale-source status", async () => {
