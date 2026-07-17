@@ -154,7 +154,14 @@ class PostgresDataQualityRepository:
         rows = connection.execute(
             """select code, label, enabled, disabled_reason,
                       last_success_at, last_attempt_at, last_error
-               from source_connector order by code"""
+               from source_connector
+               order by case code
+                 when 'bangumi' then 1
+                 when 'mal' then 2
+                 when 'douban' then 3
+                 when 'filmarks' then 4
+                 else 99
+               end"""
         ).fetchall()
         return [
             connector_quality_from_row(
@@ -285,7 +292,7 @@ def connector_quality_from_row(
         status = "unavailable"
     return ConnectorQuality(
         source=SourceCode(row["code"]),
-        label=row["label"],
+        label=source_label(SourceCode(row["code"]), row["label"]),
         enabled=bool(row["enabled"]),
         status=status,
         mapped_count=mapped_count,
@@ -295,6 +302,15 @@ def connector_quality_from_row(
         last_attempt_at=last_attempt_at,
         message=last_error,
     )
+
+
+def source_label(source: SourceCode, fallback: str) -> str:
+    return {
+        SourceCode.BANGUMI: "Bangumi",
+        SourceCode.MAL: "MyAnimeList",
+        SourceCode.DOUBAN: "豆瓣",
+        SourceCode.FILMARKS: "Filmarks",
+    }.get(source, fallback)
 
 
 def backfill_quality_from_row(row: Row) -> BackfillQuality:
