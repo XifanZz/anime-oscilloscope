@@ -12,6 +12,8 @@ Coefficients: Bangumi `1.5`; MAL, Douban, and Filmarks `1.0`. Filmarks will be c
 
 The logarithm reduces platform-size dominance without discarding rating population. The unrestricted ranking allows single-source titles and reports completeness. Default threshold mode requires Bangumi `> 1,000` and MAL `> 20,000`; users can override both.
 
+When MAL is missing, Bangumi remains the displayed single-source authority. To prevent tiny early snapshots from dominating the unrestricted ranking, a single-source score with fewer than `100` Bangumi votes is confidence-guarded toward a neutral `5.0`; at `100` Bangumi votes and above, the score is exactly the Bangumi score. Equivalent guards are reserved for other single-source adapters.
+
 ## Missing and stale data
 
 - Missing observations are omitted from the denominator, never converted to zero.

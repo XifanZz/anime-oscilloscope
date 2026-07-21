@@ -4,6 +4,12 @@
 
 Future portfolio milestones will be recorded here first, then moved into a dated release section and mirrored to a GitHub Release.
 
+## 0.8.1 - 2026-07-21
+
+- Change ranking quarter labels from seasonal names to `1 月`, `4 月`, `7 月`, and `10 月`.
+- Keep Bangumi as the displayed single-source authority when MAL is missing, but confidence-guard tiny early vote samples toward a neutral score so they do not outrank stable titles.
+- Document release versioning cadence: major portfolio milestones use new minor versions, while focused fixes use patch versions.
+
 ## 0.8.0 - 2026-07-21
 
 - Add explicit demo/PostgreSQL repository selection for catalog and history reads.

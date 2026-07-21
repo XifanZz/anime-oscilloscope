@@ -2,9 +2,9 @@
 
 > 多源动画评分采样与分析平台 · Multi-source anime rating sampling and analytics.
 
-[![Release](https://img.shields.io/badge/release-v0.8.0-7ef7c7)](CHANGELOG.md)
-[![API tests](https://img.shields.io/badge/API_tests-74_passed-73b7ff)](docs/verification/phase-10.md)
-[![Web tests](https://img.shields.io/badge/Web_tests-23_passed-73b7ff)](docs/verification/phase-10.md)
+[![Release](https://img.shields.io/badge/release-v0.8.1-7ef7c7)](CHANGELOG.md)
+[![API tests](https://img.shields.io/badge/API_tests-75_passed-73b7ff)](docs/verification/phase-11.md)
+[![Web tests](https://img.shields.io/badge/Web_tests-24_passed-73b7ff)](docs/verification/phase-11.md)
 [![E2E](https://img.shields.io/badge/Chromium_E2E-4_passed-f6d36d)](e2e/critical-flows.spec.ts)
 [![License](https://img.shields.io/badge/license-MIT-ff7a9d)](LICENSE)
 
@@ -14,9 +14,9 @@ Anime Oscilloscope treats ratings as time-varying signals. Source scores are obs
 
 ## Release status / 发布状态
 
-`v0.8.0` is the first versioned live-data operations release. It keeps the labelled demo fallback for unavailable hosted APIs, while adding observable catalog quality and a protected MAL mapping review queue for live Supabase-backed deployments.
+`v0.8.1` keeps the live-data operations baseline and adds safer single-source ranking behavior: when MAL is missing, Bangumi remains authoritative, while tiny early vote samples are confidence-guarded so they cannot dominate stable titles.
 
-`v0.8.0` 是第一个带正式版本记录的实时数据运维版本：保留清晰标注的演示兜底，同时加入目录质量监控与 MAL 映射人工复核队列。
+`v0.8.1` 延续实时数据运维版本，并优化单源评分：缺 MAL 时以 Bangumi 为准，但极低人数的早期样本会做置信度保护，避免冲上榜首。
 
 The public Pages build automatically falls back to the same labelled static demo contract when the hosted API is unavailable. This keeps the portfolio interaction usable without disguising demo records as live data. Set `VITE_DISABLE_DEMO_FALLBACK=true` to make API failure strict.
 
@@ -29,7 +29,7 @@ The public Pages build automatically falls back to the same labelled static demo
 | Local Tier List / 从夯到拉 | Multiple libraries, drag/drop, ordering, persistence, PNG export |
 | Explainable AI search / AI 找番 | Chinese intent parsing, 512-D provider contract, reasons and confidence |
 | Private file import / 本地导入 | CSV/JSON parsing in browser, credential rejection, explicit confirmation |
-| Quality gates / 质量门禁 | 74 API tests, 23 web tests, 4 Chromium E2E flows |
+| Quality gates / 质量门禁 | 75 API tests, 24 web tests, 4 Chromium E2E flows |
 
 AI baseline on 50 Chinese queries: Recall@1 `0.94`, Recall@10 `0.98`, mean in-process latency about `0.49 ms`. See [AI evaluation](docs/ai-evaluation.md); these are deterministic fallback metrics, not BGE claims.
 

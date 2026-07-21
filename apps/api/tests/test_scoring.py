@@ -25,6 +25,11 @@ def test_missing_source_is_not_treated_as_zero() -> None:
     assert composite_score([]) is None
 
 
+def test_single_source_low_vote_scores_are_confidence_guarded() -> None:
+    assert composite_score([observation(SourceCode.BANGUMI, 8.8, 4)]) == 5.152
+    assert composite_score([observation(SourceCode.BANGUMI, 4.7, 100)]) == 4.7
+
+
 def test_thresholds_require_every_selected_source_and_strictly_greater_votes() -> None:
     thresholds = {SourceCode.BANGUMI: 1_000, SourceCode.MAL: 20_000}
     assert meets_thresholds(

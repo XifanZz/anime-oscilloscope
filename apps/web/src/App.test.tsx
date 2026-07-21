@@ -202,6 +202,17 @@ describe("App", () => {
     expect(screen.getByText("8.72")).toBeInTheDocument();
   });
 
+  it("labels ranking quarters by cour start month", async () => {
+    render(<App />);
+    await screen.findAllByText("极光频率");
+
+    expect(screen.getByRole("option", { name: "1 月" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "4 月" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "7 月" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "10 月" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "春" })).not.toBeInTheDocument();
+  });
+
   it("shows data quality coverage and historical backfill progress", async () => {
     render(<App />);
 
