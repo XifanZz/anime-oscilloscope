@@ -12,6 +12,12 @@ Anime Oscilloscope uses Git tags, GitHub Releases, and `CHANGELOG.md` together s
 
 ## Current releases
 
+### v0.8.2 - 2026-07-21
+
+- Anime detail panels now show the Bangumi cover poster when available.
+- Empty ranking results explain that a selected year/quarter may not have been synchronized yet.
+- Live-data sync can be manually dispatched for a chosen year and quarter, allowing targeted seasonal backfills.
+
 ### v0.8.1 - 2026-07-21
 
 - Ranking quarter labels now use anime cour start months: `1 月`, `4 月`, `7 月`, and `10 月`.

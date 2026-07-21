@@ -8,7 +8,7 @@ const anime = {
   name_cn: "极光频率",
   aliases: ["オーロラ周波数"],
   summary: "虚构动画条目。",
-  image_url: null,
+  image_url: "https://lain.bgm.tv/pic/cover/l/demo_aurora.jpg",
   air_date: "2026-04-04",
   end_date: null,
   media_type: "tv",
@@ -213,6 +213,24 @@ describe("App", () => {
     expect(screen.queryByRole("option", { name: "春" })).not.toBeInTheDocument();
   });
 
+  it("explains empty seasonal rankings as pending synchronization", async () => {
+    vi.stubGlobal("fetch", vi.fn((input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes("/anime/search")) return jsonResponse({ data_mode: "demo", query: "极光", total: 1, items: [anime] });
+      if (url.includes("/anime/semantic-search")) return jsonResponse(semanticPayload);
+      if (url.includes("/data/quality")) return jsonResponse(dataQualityPayload);
+      if (url.includes("/mappings/candidates")) return jsonResponse(mappingCandidatePayload);
+      if (url.includes("/anime/index")) return jsonResponse({ data_mode: "demo", total: 1, items: [anime] });
+      if (url.includes("/ratings/history")) return jsonResponse(historyPayload);
+      if (url.includes("/anime/demo-aurora")) return jsonResponse({ data_mode: "demo", anime, composite_score: 8.72, completeness: 100, missing_sources: [] });
+      return jsonResponse({ ...rankingPayload, total: 0, items: [] });
+    }));
+
+    render(<App />);
+
+    expect(await screen.findByText(/该季度目录还没完成同步/)).toBeInTheDocument();
+  });
+
   it("shows data quality coverage and historical backfill progress", async () => {
     render(<App />);
 
@@ -286,6 +304,10 @@ describe("App", () => {
     fireEvent.click(resultButtons.at(-1)!);
 
     expect(await screen.findByRole("dialog")).toHaveTextContent("100% 数据完整度");
+    expect(screen.getByRole("img", { name: "极光频率 海报，来源 Bangumi" })).toHaveAttribute(
+      "src",
+      "https://lain.bgm.tv/pic/cover/l/demo_aurora.jpg",
+    );
     fireEvent.keyDown(window, { key: "Escape" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
