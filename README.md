@@ -2,9 +2,9 @@
 
 > 多源动画评分采样与分析平台 · Multi-source anime rating sampling and analytics.
 
-[![Release](https://img.shields.io/badge/release-v0.8.3-7ef7c7)](CHANGELOG.md)
-[![API tests](https://img.shields.io/badge/API_tests-75_passed-73b7ff)](docs/verification/phase-12.md)
-[![Web tests](https://img.shields.io/badge/Web_tests-25_passed-73b7ff)](docs/verification/phase-12.md)
+[![Release](https://img.shields.io/badge/release-v0.8.4-7ef7c7)](CHANGELOG.md)
+[![API tests](https://img.shields.io/badge/API_tests-78_passed-73b7ff)](docs/verification/phase-13.md)
+[![Web tests](https://img.shields.io/badge/Web_tests-25_passed-73b7ff)](docs/verification/phase-13.md)
 [![E2E](https://img.shields.io/badge/Chromium_E2E-4_passed-f6d36d)](e2e/critical-flows.spec.ts)
 [![License](https://img.shields.io/badge/license-MIT-ff7a9d)](LICENSE)
 
@@ -14,9 +14,9 @@ Anime Oscilloscope treats ratings as time-varying signals. Source scores are obs
 
 ## Release status / 发布状态
 
-`v0.8.3` keeps the live-data operations baseline, adds Bangumi cover posters to detail panels, and fixes the manual seasonal sync workflow so maintainers can backfill selected year/quarter rankings.
+`v0.8.4` adds a dedicated Bangumi-only seasonal catalog backfill workflow so selected year/quarter rankings can be filled quickly even before MAL mappings exist.
 
-`v0.8.3` 延续实时数据运维版本，在详情页加入 Bangumi 海报，并修复手动季度同步工作流，支持维护者补抓指定年份/季度榜单。
+`v0.8.4` 增加专门的 Bangumi-only 季度目录回填工作流，指定年份/季度榜单可以先快速补齐，之后再慢慢补 MAL 映射。
 
 The public Pages build automatically falls back to the same labelled static demo contract when the hosted API is unavailable. This keeps the portfolio interaction usable without disguising demo records as live data. Set `VITE_DISABLE_DEMO_FALLBACK=true` to make API failure strict.
 
@@ -29,7 +29,7 @@ The public Pages build automatically falls back to the same labelled static demo
 | Local Tier List / 从夯到拉 | Multiple libraries, drag/drop, ordering, persistence, PNG export |
 | Explainable AI search / AI 找番 | Chinese intent parsing, 512-D provider contract, reasons and confidence |
 | Private file import / 本地导入 | CSV/JSON parsing in browser, credential rejection, explicit confirmation |
-| Quality gates / 质量门禁 | 75 API tests, 25 web tests, 4 Chromium E2E flows |
+| Quality gates / 质量门禁 | 78 API tests, 25 web tests, 4 Chromium E2E flows |
 
 AI baseline on 50 Chinese queries: Recall@1 `0.94`, Recall@10 `0.98`, mean in-process latency about `0.49 ms`. See [AI evaluation](docs/ai-evaluation.md); these are deterministic fallback metrics, not BGE claims.
 

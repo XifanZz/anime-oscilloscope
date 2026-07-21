@@ -12,6 +12,12 @@ Anime Oscilloscope uses Git tags, GitHub Releases, and `CHANGELOG.md` together s
 
 ## Current releases
 
+### v0.8.4 - 2026-07-21
+
+- Added a dedicated selected-season Bangumi catalog backfill workflow.
+- Seasonal backfill uses Bangumi heat ordering to fill new anime lineups before rank coverage stabilizes.
+- Missing MAL mappings no longer block Bangumi-only entries from appearing after the season catalog is backfilled.
+
 ### v0.8.3 - 2026-07-21
 
 - Fixed the GitHub Actions manual dispatch metadata for targeted seasonal sync.

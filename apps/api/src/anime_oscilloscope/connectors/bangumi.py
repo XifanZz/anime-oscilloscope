@@ -244,12 +244,19 @@ def normalize_episode(payload: Mapping[str, Any], subject_external_id: str) -> N
     )
 
 
-def build_discovery_body(start_date: date, end_date: date) -> dict[str, Any]:
+def build_discovery_body(
+    start_date: date,
+    end_date: date,
+    *,
+    sort: str = "rank",
+) -> dict[str, Any]:
     if end_date <= start_date:
         raise ValueError("end_date must be after start_date")
+    if sort not in {"rank", "heat", "score", "match"}:
+        raise ValueError("sort must be one of: rank, heat, score, match")
     return {
         "keyword": "",
-        "sort": "rank",
+        "sort": sort,
         "filter": {
             "type": [2],
             "air_date": [f">={start_date.isoformat()}", f"<{end_date.isoformat()}"],
@@ -342,6 +349,7 @@ class BangumiConnector(SourceConnector):
         end_date: date,
         limit: int = 50,
         offset: int = 0,
+        sort: str = "rank",
     ) -> SubjectPage:
         if not 1 <= limit <= 200:
             raise ValueError("limit must be between 1 and 200")
@@ -351,7 +359,7 @@ class BangumiConnector(SourceConnector):
             "POST",
             "/v0/search/subjects",
             params={"limit": limit, "offset": offset},
-            json=build_discovery_body(start_date, end_date),
+            json=build_discovery_body(start_date, end_date, sort=sort),
         )
         data = payload.get("data")
         if not isinstance(data, list):
