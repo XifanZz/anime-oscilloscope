@@ -342,7 +342,7 @@ function App() {
           <SignalChart />
         </section>
 
-        <section className="metrics" aria-label="项目状态"><article><span>语义向量维度</span><strong>512<small>BGE / 演示回退同维</small></strong></article><article><span>历史采样点</span><strong>{history?.history.composite.length ?? "—"}<small>双源与综合分序列</small></strong></article><article><span>质量门禁</span><strong>104<small>75 API + 25 Web + 4 E2E</small></strong></article><article><span>当前版本</span><strong>0.8.2<small>季度补抓与详情海报</small></strong></article></section>
+        <section className="metrics" aria-label="项目状态"><article><span>语义向量维度</span><strong>512<small>BGE / 演示回退同维</small></strong></article><article><span>历史采样点</span><strong>{history?.history.composite.length ?? "—"}<small>双源与综合分序列</small></strong></article><article><span>质量门禁</span><strong>104<small>75 API + 25 Web + 4 E2E</small></strong></article><article><span>当前版本</span><strong>0.8.3<small>季度补抓与详情海报</small></strong></article></section>
 
         <DataQualityPanel quality={dataQuality} />
 
@@ -388,7 +388,7 @@ function App() {
 
       {detail && <div className="detail-backdrop" role="presentation" onMouseDown={() => setDetail(null)}><aside className="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={(e) => e.stopPropagation()}><button className="close-button" aria-label="关闭详情" type="button" onClick={() => setDetail(null)}>×</button><p className="eyebrow">SIGNAL DETAIL</p><div className="detail-hero">{detail.anime.image_url ? <img className="detail-poster" src={detail.anime.image_url} alt={`${detail.anime.name_cn ?? detail.anime.canonical_name} 海报，来源 Bangumi`} /> : <div className="detail-poster fallback" aria-hidden="true">{detail.anime.name_cn?.slice(0, 1) ?? "A"}</div>}<div><h2 id="detail-title">{detail.anime.name_cn ?? detail.anime.canonical_name}</h2><p className="original-title">{detail.anime.canonical_name}</p><p className="poster-source">海报来源：Bangumi</p></div></div><div className="detail-score"><strong>{detail.composite_score?.toFixed(2) ?? "—"}</strong><span>综合分<small>{detail.completeness}% 数据完整度</small></span></div><p>{detail.anime.summary}</p><div className="detail-meta"><span>{detail.anime.air_date}</span><span>{detail.anime.media_type.toUpperCase()}</span><span>{detail.anime.regions.join(" / ")}</span><span>{detail.anime.episode_count ? `${detail.anime.episode_count} 集` : "集数未知"}</span></div><SourceRatings anime={detail.anime} /><p className="demo-note">本详情为交互验证数据，不代表 Bangumi 或 MAL 的真实评价。</p></aside></div>}
 
-      <footer><span>番剧示波器 · v0.8.2</span><span>75 API · 25 Web · 4 E2E · Recall@10 0.98</span></footer>
+      <footer><span>番剧示波器 · v0.8.3</span><span>75 API · 25 Web · 4 E2E · Recall@10 0.98</span></footer>
     </div>
   );
 }

@@ -4,6 +4,11 @@
 
 Future portfolio milestones will be recorded here first, then moved into a dated release section and mirrored to a GitHub Release.
 
+## 0.8.3 - 2026-07-21
+
+- Fix the manual live-data workflow dispatch metadata by quoting the quarter input description.
+- Keep the v0.8.2 detail poster and targeted seasonal synchronization features intact.
+
 ## 0.8.2 - 2026-07-21
 
 - Add Bangumi cover posters to the anime detail panel.
