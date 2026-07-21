@@ -41,6 +41,8 @@ The `Live data sync` workflow is inert by default. Add repository secrets `APP_D
 
 The `Historical catalog backfill` workflow is separately guarded by `HISTORY_BACKFILL_ENABLED=true`. It applies migration `005` idempotently, resumes a durable PostgreSQL cursor, and processes bounded Bangumi pages from 1917 through the current year. Re-running the workflow is safe: catalog and rating writes are upserts, and a crash repeats at most the last page. The scheduled run processes ten pages every six hours; manual dispatch can raise or lower that bound without losing progress.
 
+The `Seasonal catalog backfill` workflow is guarded by the existing `LIVE_SYNC_ENABLED=true` variable and fills one selected Bangumi year/quarter without MAL matching, episode fetching, or global rating sampling. Use it when a visible seasonal filter is sparse, for example `year=2026`, `quarter=2`, `limit=100`, `max_pages=10`. It uses Bangumi heat-sorted discovery to capture current-season lineups that may not yet have stable rank ordering; the public ranking still sorts by the site's composite score after records are in PostgreSQL. Missing MAL mappings are reported as incomplete data, not as a reason to omit the Bangumi entry.
+
 The `MAL review candidate matching` workflow is guarded by `MAL_MATCH_ENABLED=true`. It selects rankable Bangumi entries without approved MAL mappings, skips entries that already have open review candidates, and writes evidence-ranked MAL candidates into `mapping_candidate`. Ambiguous matches are reviewed on the dashboard before becoming approved external mappings.
 
 Use a dedicated service role only in backend jobs. Never expose database or source credentials through Vite variables.

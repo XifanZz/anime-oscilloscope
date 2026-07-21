@@ -4,6 +4,12 @@
 
 Future portfolio milestones will be recorded here first, then moved into a dated release section and mirrored to a GitHub Release.
 
+## 0.8.4 - 2026-07-21
+
+- Add a dedicated `Seasonal catalog backfill` GitHub Actions workflow for selected Bangumi year/quarter catalog fills.
+- Use Bangumi heat-sorted discovery for seasonal backfills so current and upcoming Japanese TV lineups are not missed before rank coverage stabilizes.
+- Keep seasonal backfill Bangumi-only: missing MAL mappings no longer block catalog presence or Bangumi rating display.
+
 ## 0.8.3 - 2026-07-21
 
 - Fix the manual live-data workflow dispatch metadata by quoting the quarter input description.
