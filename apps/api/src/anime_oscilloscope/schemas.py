@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -107,6 +107,65 @@ class DataQualityResponse(BaseModel):
     backfill: BackfillQuality | None = None
     recent_runs: list[SyncRunSummary] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
+
+
+class MappingAnimeSummary(BaseModel):
+    id: str
+    bangumi_id: int | None = None
+    canonical_name: str
+    name_cn: str | None = None
+    image_url: str | None = None
+    air_date: date | None = None
+    media_type: str
+    status: str
+    regions: list[str] = Field(default_factory=list)
+    episode_count: int | None = None
+
+
+class MappingCandidateItem(BaseModel):
+    id: int
+    anime: MappingAnimeSummary
+    source: SourceCode
+    external_id: str
+    external_url: str
+    title: str
+    confidence: float = Field(ge=0, le=1)
+    disposition: str
+    evidence: dict
+    generated_at: datetime
+    resolved_at: datetime | None = None
+    current_review_status: str | None = None
+
+
+class MappingReviewSummary(BaseModel):
+    source: SourceCode
+    unresolved_review_count: int = Field(ge=0)
+    automatic_count: int = Field(ge=0)
+    rejected_count: int = Field(ge=0)
+    approved_mapping_count: int = Field(ge=0)
+    unmapped_rankable_count: int = Field(ge=0)
+
+
+class MappingCandidatePage(BaseModel):
+    data_mode: Literal["demo", "live"]
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    total: int = Field(ge=0)
+    limit: int = Field(ge=1)
+    offset: int = Field(ge=0)
+    summary: MappingReviewSummary
+    items: list[MappingCandidateItem]
+
+
+class MappingResolutionRequest(BaseModel):
+    decision: Literal["approved", "rejected"]
+
+
+class MappingResolutionResponse(BaseModel):
+    data_mode: Literal["demo", "live"]
+    candidate_id: int
+    decision: Literal["approved", "rejected"]
+    external_mapping_id: int | None = None
+    resolved_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class AnimeDetailResponse(BaseModel):

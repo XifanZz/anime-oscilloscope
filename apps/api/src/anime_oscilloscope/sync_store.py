@@ -198,6 +198,41 @@ class PostgresSyncStore:
             ).fetchall()
         return due_external_ids(rows, launch_date=launch_date, now=now)
 
+    def list_unmatched_bangumi_ids_for_review(
+        self,
+        *,
+        source: SourceCode,
+        limit: int,
+        offset: int = 0,
+    ) -> list[str]:
+        if source is SourceCode.BANGUMI:
+            raise ValueError("Bangumi is the primary source and cannot be matched to itself")
+        with self._connection() as connection:
+            rows = connection.execute(
+                """select a.bangumi_id
+                   from anime a
+                   where a.bangumi_id is not null
+                     and not a.is_nsfw and not a.is_excluded and a.air_date is not null
+                     and exists (
+                       select 1 from current_rating cr where cr.anime_id = a.id
+                     )
+                     and not exists (
+                       select 1 from external_mapping m
+                       where m.anime_id = a.id and m.source = %s
+                         and m.review_status in ('automatic', 'approved')
+                     )
+                     and not exists (
+                       select 1 from mapping_candidate c
+                       where c.anime_id = a.id and c.source = %s
+                         and c.resolved_at is null
+                         and c.disposition in ('automatic', 'review')
+                     )
+                   order by a.air_date desc, a.updated_at desc
+                   limit %s offset %s""",
+                (source, source, limit, offset),
+            ).fetchall()
+        return [str(row["bangumi_id"]) for row in rows]
+
     def initialize_backfill(
         self,
         *,

@@ -37,6 +37,20 @@ class FakeConnection:
         return FakeResult()
 
 
+class FakeRowsResult:
+    def __init__(self, rows) -> None:
+        self.rows = rows
+
+    def fetchall(self):
+        return self.rows
+
+
+class FakeReviewConnection(FakeConnection):
+    def execute(self, sql: str, params: tuple | None = None) -> FakeRowsResult:
+        self.statements.append((" ".join(sql.split()), params))
+        return FakeRowsResult([{"bangumi_id": 12345}, {"bangumi_id": 67890}])
+
+
 def test_bangumi_upsert_writes_catalog_mapping_current_rating_and_snapshot() -> None:
     connection = FakeConnection()
     store = PostgresSyncStore(lambda: connection)
@@ -99,3 +113,20 @@ def test_due_mapping_selection_honors_launch_date_and_cadence() -> None:
     ]
 
     assert due_external_ids(rows, launch_date=date(2026, 7, 1), now=now) == ["due"]
+
+
+def test_unmatched_review_selection_skips_existing_mappings_and_open_candidates() -> None:
+    connection = FakeReviewConnection()
+    store = PostgresSyncStore(lambda: connection)
+
+    ids = store.list_unmatched_bangumi_ids_for_review(
+        source=SourceCode.MAL,
+        limit=2,
+        offset=4,
+    )
+
+    assert ids == ["12345", "67890"]
+    sql, params = connection.statements[0]
+    assert "not exists ( select 1 from external_mapping" in sql
+    assert "not exists ( select 1 from mapping_candidate" in sql
+    assert params == (SourceCode.MAL, SourceCode.MAL, 2, 4)

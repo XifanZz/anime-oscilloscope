@@ -84,6 +84,54 @@ const dataQualityPayload = {
   notes: ["MAL 缺失不会被当作 0 分。"],
 };
 
+const mappingCandidatePayload = {
+  data_mode: "demo",
+  generated_at: "2026-06-30T08:00:00Z",
+  total: 1,
+  limit: 25,
+  offset: 0,
+  summary: {
+    source: "mal",
+    unresolved_review_count: 1,
+    automatic_count: 0,
+    rejected_count: 0,
+    approved_mapping_count: 3,
+    unmapped_rankable_count: 1,
+  },
+  items: [{
+    id: 1001,
+    anime: {
+      id: anime.id,
+      bangumi_id: 12345,
+      canonical_name: anime.canonical_name,
+      name_cn: anime.name_cn,
+      image_url: anime.image_url,
+      air_date: anime.air_date,
+      media_type: anime.media_type,
+      status: anime.status,
+      regions: anime.regions,
+      episode_count: anime.episode_count,
+    },
+    source: "mal",
+    external_id: "60001",
+    external_url: "https://myanimelist.net/anime/60001",
+    title: "Aurora Frequency Season 1",
+    confidence: 0.7421,
+    disposition: "review",
+    evidence: {
+      title_similarity: 0.81,
+      date_similarity: 0.9,
+      media_similarity: 1,
+      episode_similarity: 1,
+      installment_conflict: true,
+      reasons: ["installment_signature_conflict"],
+    },
+    generated_at: "2026-06-30T08:00:00Z",
+    resolved_at: null,
+    current_review_status: null,
+  }],
+};
+
 function jsonResponse(payload: unknown) {
   return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(payload) });
 }
@@ -94,6 +142,7 @@ beforeEach(() => {
     if (url.includes("/anime/search")) return jsonResponse({ data_mode: "demo", query: "极光", total: 1, items: [anime] });
     if (url.includes("/anime/semantic-search")) return jsonResponse(semanticPayload);
     if (url.includes("/data/quality")) return jsonResponse(dataQualityPayload);
+    if (url.includes("/mappings/candidates")) return jsonResponse(mappingCandidatePayload);
     if (url.includes("/anime/index")) return jsonResponse({ data_mode: "demo", total: 1, items: [anime] });
     if (url.includes("/ratings/history")) return jsonResponse(historyPayload);
     if (url.includes("/anime/demo-aurora")) return jsonResponse({ data_mode: "demo", anime, composite_score: 8.72, completeness: 100, missing_sources: [] });
@@ -159,6 +208,15 @@ describe("App", () => {
     expect(await screen.findByText("数据质量与同步状态")).toBeInTheDocument();
     expect(screen.getByText("MAL 评分覆盖")).toBeInTheDocument();
     expect(screen.getByText("进行到 1937 年")).toBeInTheDocument();
+  });
+
+  it("renders the MAL human review queue with candidate evidence", async () => {
+    render(<App />);
+
+    expect(await screen.findByText("MAL 人工复核清单")).toBeInTheDocument();
+    expect(screen.getByText("Aurora Frequency Season 1")).toBeInTheDocument();
+    expect(screen.getByText("季度 / 剧场版 / Part 特征冲突")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "确认映射" })).toBeInTheDocument();
   });
 
   it("renders dual-source history, composite signal, episodes, and stale-source status", async () => {

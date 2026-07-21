@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+Future portfolio milestones will be recorded here first, then moved into a dated release section and mirrored to a GitHub Release.
+
+## 0.8.0 - 2026-07-21
+
 - Add explicit demo/PostgreSQL repository selection for catalog and history reads.
 - Add idempotent catalog, mapping, rating snapshot, episode, and sync-run writes.
 - Add a guarded daily live-data workflow and Phase 8 deployment instructions.
@@ -10,6 +14,8 @@
 - Add resumable full-history Bangumi catalog backfill with a durable database cursor.
 - Replace the 20-row web limit with 50-row pages and explicit incremental loading.
 - Add a data-quality dashboard for catalog coverage, MAL gaps, connector freshness, and backfill progress.
+- Add a protected MAL mapping review queue with bulk candidate generation and dashboard evidence.
+- Start a formal GitHub-visible versioning policy for portfolio releases.
 
 ## 0.7.0 - 2026-07-01
 

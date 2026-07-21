@@ -109,6 +109,63 @@ export type DataQualityResponse = {
   notes: string[];
 };
 
+export type MappingCandidatePage = {
+  data_mode: "demo" | "live";
+  generated_at: string;
+  total: number;
+  limit: number;
+  offset: number;
+  summary: {
+    source: SourceCode;
+    unresolved_review_count: number;
+    automatic_count: number;
+    rejected_count: number;
+    approved_mapping_count: number;
+    unmapped_rankable_count: number;
+  };
+  items: {
+    id: number;
+    anime: {
+      id: string;
+      bangumi_id: number | null;
+      canonical_name: string;
+      name_cn: string | null;
+      image_url: string | null;
+      air_date: string | null;
+      media_type: Anime["media_type"];
+      status: Anime["status"];
+      regions: string[];
+      episode_count: number | null;
+    };
+    source: SourceCode;
+    external_id: string;
+    external_url: string;
+    title: string;
+    confidence: number;
+    disposition: "automatic" | "review" | "reject";
+    evidence: {
+      title_similarity?: number;
+      date_similarity?: number;
+      media_similarity?: number;
+      episode_similarity?: number;
+      installment_conflict?: boolean;
+      reasons?: string[];
+      [key: string]: unknown;
+    };
+    generated_at: string;
+    resolved_at: string | null;
+    current_review_status: string | null;
+  }[];
+};
+
+export type MappingResolutionResponse = {
+  data_mode: "demo" | "live";
+  candidate_id: number;
+  decision: "approved" | "rejected";
+  external_mapping_id: number | null;
+  resolved_at: string;
+};
+
 export type HistoryPoint = {
   sampled_at: string;
   score: number;
@@ -191,6 +248,27 @@ export function getAnime(animeId: string): Promise<DetailResponse> {
 
 export function getDataQuality(): Promise<DataQualityResponse> {
   return request<DataQualityResponse>("/data/quality");
+}
+
+export function getMappingCandidates(
+  offset = 0,
+  limit = 25,
+): Promise<MappingCandidatePage> {
+  return request<MappingCandidatePage>(
+    `/mappings/candidates?source=mal&disposition=review&unresolved_only=true&limit=${limit}&offset=${offset}`,
+  );
+}
+
+export function resolveMappingCandidate(
+  candidateId: number,
+  decision: "approved" | "rejected",
+  token: string,
+): Promise<MappingResolutionResponse> {
+  return request<MappingResolutionResponse>(`/mappings/candidates/${candidateId}/resolve`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Review-Token": token },
+    body: JSON.stringify({ decision }),
+  });
 }
 
 export type SemanticResponse = {
