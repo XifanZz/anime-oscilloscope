@@ -16,7 +16,7 @@ on:
         required: false
         default: ""
       quarter:
-        description: Optional target quarter for manual seasonal sync: 1, 2, 3, or 4
+        description: "Optional target quarter for manual seasonal sync: 1, 2, 3, or 4"
         required: false
         default: ""
   schedule:

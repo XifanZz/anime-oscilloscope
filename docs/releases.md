@@ -12,6 +12,11 @@ Anime Oscilloscope uses Git tags, GitHub Releases, and `CHANGELOG.md` together s
 
 ## Current releases
 
+### v0.8.3 - 2026-07-21
+
+- Fixed the GitHub Actions manual dispatch metadata for targeted seasonal sync.
+- Keeps the detail poster and selected year/quarter synchronization features introduced in `v0.8.2`.
+
 ### v0.8.2 - 2026-07-21
 
 - Anime detail panels now show the Bangumi cover poster when available.
