@@ -2,7 +2,7 @@
 
 ## Release boundary
 
-`v0.7.0-demo` deploys fictional, clearly labelled data by default. The PostgreSQL read repository and idempotent sync writer are available but activate only when `APP_REPOSITORY_BACKEND=postgres`; a live public launch still requires migrations, approved credentials, and an initial successful sync.
+`v0.8.0` is the first live-data operations release. The PostgreSQL read repository, idempotent sync writer, catalog quality dashboard, and MAL mapping review queue activate when `APP_REPOSITORY_BACKEND=postgres`; the frontend still keeps a clearly labelled static demo fallback when the hosted API is unavailable.
 
 ## Vercel API
 
@@ -53,3 +53,4 @@ Use a dedicated service role only in backend jobs. Never expose database or sour
 - Pages requests the deployed API rather than localhost.
 - Demo/live mode and active semantic engine are visible.
 - Git tag and changelog version match.
+- GitHub Release notes are created from `CHANGELOG.md`.
