@@ -4,6 +4,12 @@
 
 Future portfolio milestones will be recorded here first, then moved into a dated release section and mirrored to a GitHub Release.
 
+## 0.8.2 - 2026-07-21
+
+- Add Bangumi cover posters to the anime detail panel.
+- Clarify empty ranking results when a selected year/quarter has not yet been synchronized.
+- Allow the live-data workflow to manually synchronize a selected year and quarter, enabling targeted seasonal backfills such as 2026 Q2.
+
 ## 0.8.1 - 2026-07-21
 
 - Change ranking quarter labels from seasonal names to `1 月`, `4 月`, `7 月`, and `10 月`.

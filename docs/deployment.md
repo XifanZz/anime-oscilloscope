@@ -37,7 +37,7 @@ Apply SQL files in lexical order:
 
 ## Scheduled synchronization
 
-The `Live data sync` workflow is inert by default. Add repository secrets `APP_DATABASE_URL`, `APP_BANGUMI_TOKEN`, and `APP_MAL_CLIENT_ID`, then set repository variable `LIVE_SYNC_ENABLED=true`. It runs at 03:17 China Standard Time, rotates through seven seasonal discovery pages across the week, and can also be started manually with an explicit offset. Each execution records `sync_run`, applies the configured sampling cadence, keeps failed-source snapshots intact, and writes ambiguous MAL matches to `mapping_candidate`.
+The `Live data sync` workflow is inert by default. Add repository secrets `APP_DATABASE_URL`, `APP_BANGUMI_TOKEN`, and `APP_MAL_CLIENT_ID`, then set repository variable `LIVE_SYNC_ENABLED=true`. It runs at 03:17 China Standard Time, rotates through seven seasonal discovery pages across the week, and can also be started manually with an explicit offset. Manual dispatch may additionally pass `year` and `quarter` to fill a specific seasonal ranking before the full historical backfill reaches that year. Each execution records `sync_run`, applies the configured sampling cadence, keeps failed-source snapshots intact, and writes ambiguous MAL matches to `mapping_candidate`.
 
 The `Historical catalog backfill` workflow is separately guarded by `HISTORY_BACKFILL_ENABLED=true`. It applies migration `005` idempotently, resumes a durable PostgreSQL cursor, and processes bounded Bangumi pages from 1917 through the current year. Re-running the workflow is safe: catalog and rating writes are upserts, and a crash repeats at most the last page. The scheduled run processes ten pages every six hours; manual dispatch can raise or lower that bound without losing progress.
 

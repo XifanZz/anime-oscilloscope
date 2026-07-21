@@ -11,6 +11,14 @@ on:
         description: Manual discovery offset (scheduled runs rotate automatically)
         required: false
         default: "0"
+      year:
+        description: Optional target year for manual seasonal sync
+        required: false
+        default: ""
+      quarter:
+        description: Optional target quarter for manual seasonal sync: 1, 2, 3, or 4
+        required: false
+        default: ""
   schedule:
     - cron: "17 19 * * *"
 
@@ -44,14 +52,22 @@ jobs:
         run: |
           test -n "$APP_DATABASE_URL" || { echo "APP_DATABASE_URL is missing"; exit 1; }
           test -n "$APP_MAL_CLIENT_ID" || { echo "APP_MAL_CLIENT_ID is missing"; exit 1; }
-      - name: Synchronize current season
+      - name: Synchronize selected season
         shell: bash
         run: |
           LIMIT="${{ inputs.limit || '20' }}"
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
             DAY_OF_YEAR=$(date -u +%j)
             OFFSET=$(( (10#$DAY_OF_YEAR % 7) * LIMIT ))
+            YEAR_ARGS=()
           else
             OFFSET="${{ inputs.offset || '0' }}"
+            YEAR_ARGS=()
+            if [[ -n "${{ inputs.year }}" ]]; then
+              YEAR_ARGS+=(--year "${{ inputs.year }}")
+            fi
+            if [[ -n "${{ inputs.quarter }}" ]]; then
+              YEAR_ARGS+=(--quarter "${{ inputs.quarter }}")
+            fi
           fi
-          python -m anime_oscilloscope.jobs.sync_catalog --limit "$LIMIT" --offset "$OFFSET"
+          python -m anime_oscilloscope.jobs.sync_catalog "${YEAR_ARGS[@]}" --limit "$LIMIT" --offset "$OFFSET"
