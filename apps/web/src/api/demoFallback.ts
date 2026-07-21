@@ -117,6 +117,58 @@ function dataQuality() {
   };
 }
 
+function mappingCandidates() {
+  return {
+    data_mode: "demo",
+    generated_at: sampledAt,
+    total: 1,
+    limit: 25,
+    offset: 0,
+    summary: {
+      source: "mal",
+      unresolved_review_count: 1,
+      automatic_count: 0,
+      rejected_count: 0,
+      approved_mapping_count: 3,
+      unmapped_rankable_count: 1,
+    },
+    items: [
+      {
+        id: 1001,
+        anime: {
+          id: demoCatalog[0].id,
+          bangumi_id: 12345,
+          canonical_name: demoCatalog[0].canonical_name,
+          name_cn: demoCatalog[0].name_cn,
+          image_url: demoCatalog[0].image_url,
+          air_date: demoCatalog[0].air_date,
+          media_type: demoCatalog[0].media_type,
+          status: demoCatalog[0].status,
+          regions: demoCatalog[0].regions,
+          episode_count: demoCatalog[0].episode_count,
+        },
+        source: "mal",
+        external_id: "60001",
+        external_url: "https://myanimelist.net/anime/60001",
+        title: "Aurora Frequency Season 1",
+        confidence: 0.7421,
+        disposition: "review",
+        evidence: {
+          title_similarity: 0.81,
+          date_similarity: 0.9,
+          media_similarity: 1,
+          episode_similarity: 1,
+          installment_conflict: true,
+          reasons: ["installment_signature_conflict"],
+        },
+        generated_at: sampledAt,
+        resolved_at: null,
+        current_review_status: null,
+      },
+    ],
+  };
+}
+
 function history(): HistoryResponse {
   const makePoints = (scores: number[], start: number, end: number) => scores.map((score, index) => ({
     sampled_at: `${historyDates[index]}T08:00:00Z`, score,
@@ -165,6 +217,16 @@ function semantic(query: string): SemanticResponse {
 export async function demoFallback(path: string, init?: RequestInit): Promise<unknown> {
   const url = new URL(path, "https://demo.invalid");
   if (url.pathname === "/data/quality") return dataQuality();
+  if (url.pathname === "/mappings/candidates") return mappingCandidates();
+  if (url.pathname.match(/^\/mappings\/candidates\/\d+\/resolve$/)) {
+    return {
+      data_mode: "demo",
+      candidate_id: Number(url.pathname.split("/")[3]),
+      decision: "approved",
+      external_mapping_id: null,
+      resolved_at: sampledAt,
+    };
+  }
   if (url.pathname === "/rankings") return ranking(url);
   if (url.pathname === "/anime/index") return { data_mode: "demo", total: demoCatalog.length, items: demoCatalog };
   if (url.pathname === "/anime/search") {

@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     project_url: str = "https://github.com/XifanZz/anime-oscilloscope"
     semantic_backend: Literal["hash", "bge"] = "hash"
     semantic_model_name: str = "BAAI/bge-small-zh-v1.5"
+    review_admin_token: str | None = None
 
     @field_validator("cors_origins", mode="before")
     @classmethod

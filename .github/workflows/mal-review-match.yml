@@ -1,0 +1,66 @@
+name: MAL review candidate matching
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: Maximum unmatched Bangumi subjects to process
+        required: false
+        default: "25"
+      offset:
+        description: Offset inside the unmatched queue
+        required: false
+        default: "0"
+      candidate_limit:
+        description: MAL search candidates per subject
+        required: false
+        default: "10"
+  schedule:
+    - cron: "43 20 * * *"
+
+concurrency:
+  group: mal-review-candidate-matching
+  cancel-in-progress: false
+
+jobs:
+  match:
+    if: ${{ vars.MAL_MATCH_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      APP_ENV: production
+      APP_REPOSITORY_BACKEND: postgres
+      APP_DATABASE_URL: ${{ secrets.APP_DATABASE_URL }}
+      APP_BANGUMI_TOKEN: ${{ secrets.APP_BANGUMI_TOKEN }}
+      APP_MAL_CLIENT_ID: ${{ secrets.APP_MAL_CLIENT_ID }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: apps/api/pyproject.toml
+      - run: python -m pip install ./apps/api
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          test -n "$APP_DATABASE_URL" || { echo "APP_DATABASE_URL is missing"; exit 1; }
+          test -n "$APP_MAL_CLIENT_ID" || { echo "APP_MAL_CLIENT_ID is missing"; exit 1; }
+      - name: Generate MAL review candidates
+        shell: bash
+        run: |
+          LIMIT="${{ inputs.limit || '25' }}"
+          OFFSET="${{ inputs.offset || '0' }}"
+          CANDIDATE_LIMIT="${{ inputs.candidate_limit || '10' }}"
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            DAY_OF_YEAR=$(date -u +%j)
+            OFFSET=$(( (10#$DAY_OF_YEAR % 20) * LIMIT ))
+          fi
+          python -m anime_oscilloscope.jobs.bulk_match_mal \
+            --limit "$LIMIT" \
+            --offset "$OFFSET" \
+            --candidate-limit "$CANDIDATE_LIMIT" \
+            --write
+

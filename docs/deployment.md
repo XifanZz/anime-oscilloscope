@@ -9,8 +9,9 @@
 1. Import `XifanZz/anime-oscilloscope` into a personal Vercel Hobby account.
 2. Set the project Root Directory to `apps/api` and Framework Preset to **FastAPI**; Vercel reads the conventional `app.py` entrypoint.
 3. Add `APP_DATABASE_URL`, `APP_MAL_CLIENT_ID`, `APP_ENV=production`, `APP_REPOSITORY_BACKEND=postgres`, `APP_SEMANTIC_BACKEND=hash`, and `APP_CORS_ORIGINS=["https://xifanzz.github.io"]`.
-4. Deploy with project name `anime-oscilloscope-api`.
-5. Verify that `/api/v1/health` reports `data_mode: live`, then check `/docs` and the semantic-search rate-limit headers.
+4. Optional: set `APP_REVIEW_ADMIN_TOKEN` to enable protected write actions from the MAL review dashboard. Keep it server-side only; the public site works as a read-only review queue when it is absent.
+5. Deploy with project name `anime-oscilloscope-api`.
+6. Verify that `/api/v1/health` reports `data_mode: live`, then check `/docs` and the semantic-search rate-limit headers.
 
 Vercel Functions are stateless; long-running discovery and sampling remain in GitHub Actions. The frontend retains browser-local Tier data and falls back to bundled fictional demo responses if the hosted API is unavailable. Set `VITE_DISABLE_DEMO_FALLBACK=true` in strict environments where API failure should be fatal.
 
@@ -39,6 +40,8 @@ Apply SQL files in lexical order:
 The `Live data sync` workflow is inert by default. Add repository secrets `APP_DATABASE_URL`, `APP_BANGUMI_TOKEN`, and `APP_MAL_CLIENT_ID`, then set repository variable `LIVE_SYNC_ENABLED=true`. It runs at 03:17 China Standard Time, rotates through seven seasonal discovery pages across the week, and can also be started manually with an explicit offset. Each execution records `sync_run`, applies the configured sampling cadence, keeps failed-source snapshots intact, and writes ambiguous MAL matches to `mapping_candidate`.
 
 The `Historical catalog backfill` workflow is separately guarded by `HISTORY_BACKFILL_ENABLED=true`. It applies migration `005` idempotently, resumes a durable PostgreSQL cursor, and processes bounded Bangumi pages from 1917 through the current year. Re-running the workflow is safe: catalog and rating writes are upserts, and a crash repeats at most the last page. The scheduled run processes ten pages every six hours; manual dispatch can raise or lower that bound without losing progress.
+
+The `MAL review candidate matching` workflow is guarded by `MAL_MATCH_ENABLED=true`. It selects rankable Bangumi entries without approved MAL mappings, skips entries that already have open review candidates, and writes evidence-ranked MAL candidates into `mapping_candidate`. Ambiguous matches are reviewed on the dashboard before becoming approved external mappings.
 
 Use a dedicated service role only in backend jobs. Never expose database or source credentials through Vite variables.
 

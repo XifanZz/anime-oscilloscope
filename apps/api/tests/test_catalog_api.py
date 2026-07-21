@@ -86,6 +86,24 @@ def test_data_quality_summarizes_demo_catalog_and_source_gaps() -> None:
     assert payload["connectors"][0]["status"] == "fresh"
 
 
+def test_mapping_candidate_queue_is_readable_and_review_writes_are_guarded() -> None:
+    response = client.get("/api/v1/mappings/candidates")
+    forbidden = client.post(
+        "/api/v1/mappings/candidates/1001/resolve",
+        json={"decision": "approved"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["data_mode"] == "demo"
+    assert payload["summary"]["source"] == "mal"
+    assert payload["summary"]["unresolved_review_count"] == 1
+    assert payload["items"][0]["source"] == "mal"
+    assert payload["items"][0]["external_url"].startswith("https://myanimelist.net/anime/")
+    assert forbidden.status_code == 403
+    assert forbidden.json()["detail"] == "Review writes are disabled"
+
+
 def test_detail_explains_source_completeness_and_returns_404() -> None:
     detail = client.get("/api/v1/anime/demo-lantern")
     missing = client.get("/api/v1/anime/unknown")

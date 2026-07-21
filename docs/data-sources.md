@@ -56,3 +56,8 @@ Bangumi is the primary catalog. MAL candidates are ranked using reproducible evi
 - episode-count agreement: 5%.
 
 Automatic approval additionally requires a title score of at least 0.92, overall confidence of at least 0.88, and no risk reason. Different media types, distant dates, episode-count conflicts, or inconsistent season/Part/movie/OVA signatures force review or rejection.
+
+The public API exposes a read-only MAL review queue at `/api/v1/mappings/candidates`.
+Approving or rejecting candidates requires `APP_REVIEW_ADMIN_TOKEN` and the `X-Review-Token`
+header; without that server-side token, write actions are disabled. Batch candidate generation is
+handled by the guarded `MAL review candidate matching` GitHub Actions workflow.

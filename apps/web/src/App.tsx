@@ -15,6 +15,7 @@ import {
 } from "./api/client";
 import { TierList } from "./tier-list/TierList";
 import { AiSearch } from "./ai-search/AiSearch";
+import { MappingReview } from "./mapping-review/MappingReview";
 
 export function currentSeason(now = new Date()): Pick<RankingFilters, "year" | "quarter"> {
   return {
@@ -330,7 +331,7 @@ function App() {
       <a className="skip-link" href="#main-content">跳到主要内容</a>
       <header className="topbar">
         <a className="brand" href="#top" aria-label="番剧示波器首页"><OscilloscopeMark /><span><strong>番剧示波器</strong><small>ANIME OSCILLOSCOPE</small></span></a>
-        <nav aria-label="主要导航"><a className="active" href="#rankings">综合榜单</a><a href="#oscilloscope">评分走势</a><a href="#search">动画搜索</a><a href="#ai-search">AI 找番</a><a href="#tier-list">从夯到拉</a><a href="#methodology">评分方法</a></nav>
+        <nav aria-label="主要导航"><a className="active" href="#rankings">综合榜单</a><a href="#oscilloscope">评分走势</a><a href="#search">动画搜索</a><a href="#ai-search">AI 找番</a><a href="#mapping-review">MAL 复核</a><a href="#tier-list">从夯到拉</a><a href="#methodology">评分方法</a></nav>
         <div className="freshness"><i /><span>API / 静态演示就绪</span></div>
       </header>
 
@@ -377,6 +378,8 @@ function App() {
         <section className="search-section" id="search"><div><p className="eyebrow">CATALOG SEARCH</p><h2>搜索动画目录</h2><p>中文名、原名、别名和标签均可匹配。</p></div><form className="search-form" onSubmit={submitSearch}><input aria-label="动画搜索" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="例如：潮汐、太空、悬疑" /><button type="submit">搜索信号</button></form>{searchResults !== null && <div className="search-results">{searchResults.map((anime) => <button type="button" key={anime.id} onClick={() => openDetail(anime.id)}><strong>{anime.name_cn ?? anime.canonical_name}</strong><span>{anime.canonical_name}</span></button>)}{searchResults.length === 0 && <p>没有找到匹配条目。</p>}</div>}</section>
 
         <AiSearch />
+
+        <MappingReview />
 
         <TierList catalog={rankings?.items.map((item) => item.anime) ?? []} catalogIndex={catalogIndex} />
 

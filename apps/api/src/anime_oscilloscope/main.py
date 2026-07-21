@@ -1,4 +1,4 @@
-from fastapi import APIRouter, FastAPI, HTTPException, Query, Request, Response
+from fastapi import APIRouter, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from anime_oscilloscope import __version__
@@ -8,6 +8,7 @@ from anime_oscilloscope.connectors import BangumiConnector, MALConnector
 from anime_oscilloscope.database import create_repositories
 from anime_oscilloscope.domain import MediaType, SourceCode
 from anime_oscilloscope.history import RatingHistoryResponse
+from anime_oscilloscope.mapping_review import create_mapping_review_repository
 from anime_oscilloscope.quality import create_quality_repository
 from anime_oscilloscope.rate_limit import FixedWindowRateLimiter
 from anime_oscilloscope.schemas import (
@@ -15,6 +16,9 @@ from anime_oscilloscope.schemas import (
     CatalogIndexResponse,
     DataQualityResponse,
     HealthResponse,
+    MappingCandidatePage,
+    MappingResolutionRequest,
+    MappingResolutionResponse,
     ScoringRule,
     SearchResponse,
     ServiceMetaResponse,
@@ -31,6 +35,7 @@ from anime_oscilloscope.semantic import (
 settings = get_settings()
 catalog_repository, history_repository = create_repositories(settings)
 quality_repository = create_quality_repository(settings, catalog_repository)
+mapping_review_repository = create_mapping_review_repository(settings, catalog_repository)
 semantic_service = SemanticSearchService(
     catalog_repository,
     create_embedding_provider(settings.semantic_backend, settings.semantic_model_name),
@@ -126,6 +131,45 @@ def service_meta() -> ServiceMetaResponse:
 @router.get("/data/quality", response_model=DataQualityResponse, tags=["system"])
 def data_quality() -> DataQualityResponse:
     return quality_repository.get()
+
+
+@router.get("/mappings/candidates", response_model=MappingCandidatePage, tags=["mapping"])
+def mapping_candidates(
+    source: SourceCode = SourceCode.MAL,
+    disposition: str = Query(default="review", pattern="^(automatic|review|reject)$"),
+    unresolved_only: bool = True,
+    limit: int = Query(default=25, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> MappingCandidatePage:
+    if source not in {SourceCode.MAL, SourceCode.DOUBAN, SourceCode.FILMARKS}:
+        raise HTTPException(status_code=422, detail="Only secondary sources have candidates")
+    return mapping_review_repository.list_candidates(
+        source=source,
+        disposition=disposition,
+        unresolved_only=unresolved_only,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.post(
+    "/mappings/candidates/{candidate_id}/resolve",
+    response_model=MappingResolutionResponse,
+    tags=["mapping"],
+)
+def resolve_mapping_candidate(
+    candidate_id: int,
+    payload: MappingResolutionRequest,
+    x_review_token: str | None = Header(default=None),
+) -> MappingResolutionResponse:
+    if not settings.review_admin_token:
+        raise HTTPException(status_code=403, detail="Review writes are disabled")
+    if x_review_token != settings.review_admin_token:
+        raise HTTPException(status_code=403, detail="Invalid review token")
+    try:
+        return mapping_review_repository.resolve_candidate(candidate_id, decision=payload.decision)
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 @router.get("/rankings", response_model=RankingPage, tags=["catalog"])
