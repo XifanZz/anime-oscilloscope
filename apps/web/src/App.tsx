@@ -168,7 +168,7 @@ function OscilloscopeMark() {
 function SignalChart() {
   return (
     <div className="signal-panel" aria-label="评分信号视觉预览">
-      <div className="signal-panel-header"><span>COMPOSITE SIGNAL / RELEASE 0.7</span><span className="channel-pill">CH B+M</span></div>
+      <div className="signal-panel-header"><span>COMPOSITE SIGNAL / RELEASE 0.8</span><span className="channel-pill">CH B+M</span></div>
       <svg className="signal-chart" viewBox="0 0 640 260" role="img" aria-label="示意评分曲线">
         <defs><linearGradient id="signalGlow" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#7ef7c7" /><stop offset="1" stopColor="#73b7ff" /></linearGradient></defs>
         <path className="signal-area" d="M0 210 C80 198 105 124 172 148 S260 188 320 104 S430 78 474 118 S558 70 640 44 V260 H0Z" />
@@ -342,7 +342,7 @@ function App() {
           <SignalChart />
         </section>
 
-        <section className="metrics" aria-label="项目状态"><article><span>语义向量维度</span><strong>512<small>BGE / 演示回退同维</small></strong></article><article><span>历史采样点</span><strong>{history?.history.composite.length ?? "—"}<small>双源与综合分序列</small></strong></article><article><span>质量门禁</span><strong>88<small>66 API + 18 Web + 4 E2E</small></strong></article><article><span>当前版本</span><strong>0.7<small>作品集演示发布</small></strong></article></section>
+        <section className="metrics" aria-label="项目状态"><article><span>语义向量维度</span><strong>512<small>BGE / 演示回退同维</small></strong></article><article><span>历史采样点</span><strong>{history?.history.composite.length ?? "—"}<small>双源与综合分序列</small></strong></article><article><span>质量门禁</span><strong>103<small>75 API + 24 Web + 4 E2E</small></strong></article><article><span>当前版本</span><strong>0.8<small>实时数据运维发布</small></strong></article></section>
 
         <DataQualityPanel quality={dataQuality} />
 
@@ -350,7 +350,7 @@ function App() {
           <div className="section-heading"><div><p className="eyebrow">ALL TIME / API DRIVEN</p><h2>全历史综合信号排行榜</h2><p>默认展示全时期，并支持按年份、季度、地区与类型筛选；综合分不会将缺失来源记为零分。</p></div></div>
           <div className="filter-bar" aria-label="榜单筛选">
             <label>年份<select aria-label="年份" value={filters.year} onChange={(e) => updateFilter("year", e.target.value)}><option value="">全时期</option>{rankingYears().map((year) => <option key={year} value={year}>{year}</option>)}</select></label>
-            <label>季度<select aria-label="季度" value={filters.quarter} onChange={(e) => updateFilter("quarter", e.target.value)}><option value="">全部季度</option><option value="1">冬</option><option value="2">春</option><option value="3">夏</option><option value="4">秋</option></select></label>
+            <label>季度<select aria-label="季度" value={filters.quarter} onChange={(e) => updateFilter("quarter", e.target.value)}><option value="">全部季度</option><option value="1">1 月</option><option value="2">4 月</option><option value="3">7 月</option><option value="4">10 月</option></select></label>
             <label>地区<select aria-label="地区" value={filters.region} onChange={(e) => updateFilter("region", e.target.value)}><option value="">全部地区</option><option value="CN">中国</option><option value="JP">日本</option><option value="KR">韩国</option></select></label>
             <label>类型<select aria-label="类型" value={filters.mediaType} onChange={(e) => updateFilter("mediaType", e.target.value)}><option value="">全部类型</option><option value="tv">TV</option><option value="web">WEB</option><option value="movie">电影</option><option value="ova">OVA</option></select></label>
             <label>门槛<select aria-label="门槛" value={filters.mode} onChange={(e) => updateFilter("mode", e.target.value)}><option value="unrestricted">无限制榜</option><option value="threshold">默认门槛榜</option></select></label>
@@ -383,12 +383,12 @@ function App() {
 
         <TierList catalog={rankings?.items.map((item) => item.anime) ?? []} catalogIndex={catalogIndex} />
 
-        <section className="methodology" id="methodology"><div><p className="eyebrow">OPEN METHODOLOGY</p><h2>不是神秘算法，<br />是一台透明仪器。</h2></div><div className="formula-card"><code>Σ(score × α × log(1 + votes))</code><span /><code>Σ(α × log(1 + votes))</code><p>Bangumi α = 1.5 · MAL α = 1.0</p></div><p className="method-copy">评分人数取对数，避免单个平台仅凭体量完全淹没其他社区。无限制榜允许单源条目，但始终标注完整度；门槛榜要求 Bangumi ＞ 1000、MAL ＞ 20000。</p></section>
+        <section className="methodology" id="methodology"><div><p className="eyebrow">OPEN METHODOLOGY</p><h2>不是神秘算法，<br />是一台透明仪器。</h2></div><div className="formula-card"><code>Σ(score × α × log(1 + votes))</code><span /><code>Σ(α × log(1 + votes))</code><p>Bangumi α = 1.5 · MAL α = 1.0</p></div><p className="method-copy">评分人数取对数，避免单个平台仅凭体量完全淹没其他社区。缺 MAL 时以 Bangumi 为准；但 Bangumi 低于 100 人的早期单源样本会向 5.0 做置信度保护，防止极小样本冲上榜首。门槛榜要求 Bangumi ＞ 1000、MAL ＞ 20000。</p></section>
       </main>
 
       {detail && <div className="detail-backdrop" role="presentation" onMouseDown={() => setDetail(null)}><aside className="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={(e) => e.stopPropagation()}><button className="close-button" aria-label="关闭详情" type="button" onClick={() => setDetail(null)}>×</button><p className="eyebrow">SIGNAL DETAIL</p><h2 id="detail-title">{detail.anime.name_cn ?? detail.anime.canonical_name}</h2><p className="original-title">{detail.anime.canonical_name}</p><div className="detail-score"><strong>{detail.composite_score?.toFixed(2) ?? "—"}</strong><span>综合分<small>{detail.completeness}% 数据完整度</small></span></div><p>{detail.anime.summary}</p><div className="detail-meta"><span>{detail.anime.air_date}</span><span>{detail.anime.media_type.toUpperCase()}</span><span>{detail.anime.regions.join(" / ")}</span><span>{detail.anime.episode_count ? `${detail.anime.episode_count} 集` : "集数未知"}</span></div><SourceRatings anime={detail.anime} /><p className="demo-note">本详情为交互验证数据，不代表 Bangumi 或 MAL 的真实评价。</p></aside></div>}
 
-      <footer><span>番剧示波器 · v0.8.0</span><span>74 API · 23 Web · 4 E2E · Recall@10 0.98</span></footer>
+      <footer><span>番剧示波器 · v0.8.1</span><span>75 API · 24 Web · 4 E2E · Recall@10 0.98</span></footer>
     </div>
   );
 }
